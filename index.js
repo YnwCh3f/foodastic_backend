@@ -20,12 +20,19 @@ app.use(cors());
 const get = async (res, table) => {
     let tables = table; 
     let filters = "";
+    let search = "";
+    if (req.body.name){
+        search = `name like "${req.body.name}%"` 
+    }
     if (req.body.kcal){
-        tables += " inner join nutritions";
+        tables += ` inner join nutritions using(${table.substring(0, table.length-1)}_id)`;
         filters += `kcal="${req.body.kcal}"`
     }
+    if (req.body.price){
+        filters += `price="${req.body.price}"`
+    }
     try{
-        const [ json ] = await connection.query(`select * from ${tables}` + filters.length == 0 ? "" : "where" + filters);
+        const [ json ] = await connection.query(`select * from ${tables}` + filters.length == 0 || search.length == 0 ? "" : "where" + filters + search);
         res.status(200).send(json);
     } catch {
         res.status(500).send({ error : "Wrong query!" });
