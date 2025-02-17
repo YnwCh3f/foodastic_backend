@@ -17,7 +17,7 @@ app.use(cors());
 
 //  FUNCTIONS
 
-const get = async (res, table) => {
+const get = async (req, res, table) => {
     let tables = table; 
     let filters = "";
     let search = "";
@@ -29,10 +29,11 @@ const get = async (res, table) => {
         filters += `kcal="${req.body.kcal}"`
     }
     if (req.body.price){
-        filters += `price="${req.body.price}"`
+        filters += `${filters.length > 0 ? ", " : ""}price="${req.body.price}"`
     }
+    console.log(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? ", " : "") + search);
     try{
-        const [ json ] = await connection.query(`select * from ${tables}` + filters.length == 0 || search.length == 0 ? "" : "where" + filters + search);
+        const [ json ] = await connection.query(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? ", " : "") + search);
         res.status(200).send(json);
     } catch {
         res.status(500).send({ error : "Wrong query!" });
@@ -111,9 +112,9 @@ const mod = async (req, res, table) => {
 //  GET
 
 app.get("/", (req, res) => res.status(200).send("<h1>Foodastic v1.0.0</h1>"));
-app.get("/foods", (req, res) => get(res, "foods"));
-app.get("/users", (req, res) => get(res, "users"));
-app.get("/cart", (req, res) => get(res, "cart"));
+app.get("/foods", (req, res) => get(req, res, "foods"));
+app.get("/users", (req, res) => get(req, res, "users"));
+app.get("/cart", (req, res) => get(req, res, "cart"));
 
 //  POST
 
