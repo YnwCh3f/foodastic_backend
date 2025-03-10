@@ -317,6 +317,21 @@ const isRemovable = async (table, column, value) => {
 }
 
 
+const login = async (req, res) => {
+    if (!req.body.email && req.body.password){
+        res.status(400).send({ error : "Bad Request!" });
+        return;
+    }
+    try{
+        const [ json ] = await connection.execute("select * from users where user_id=? and password=?", req.body.email, req.body.password);
+        if (json.length > 0) res.status(200).send({ status : "OK" });
+        else res.status(404).send({ error : "User not found!" })
+    } catch (err) {
+        res.status(500).send({ error : "Internal Server Error!" })
+    }
+}
+
+
 app.get("/", (req, res) => res.status(200).send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
 app.get("/users", getUsers);
