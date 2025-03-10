@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Feb 24. 11:55
+-- Létrehozás ideje: 2025. Már 10. 12:45
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -27,6 +27,19 @@ USE `foodastic`;
 -- --------------------------------------------------------
 
 --
+-- Tábla szerkezet ehhez a táblához `chats`
+--
+
+CREATE TABLE `chats` (
+  `chat_id` int(11) NOT NULL,
+  `sender_id` int(11) NOT NULL,
+  `recipient_id` int(11) NOT NULL,
+  `message` text COLLATE utf8_hungarian_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Tábla szerkezet ehhez a táblához `foods`
 --
 
@@ -36,6 +49,16 @@ CREATE TABLE `foods` (
   `price` int(11) NOT NULL,
   `image` varchar(30) COLLATE utf8_hungarian_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `foods`
+--
+
+INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
+(1, 'asd', 1200, '-; delete from foods where 1=='),
+(2, 'asd', 1200, '-; delete from foods where 1=='),
+(3, 'asd', 1200, '-; delete from foods where 1=='),
+(4, 'asd', 1200, '-; delete from foods where 1=1');
 
 -- --------------------------------------------------------
 
@@ -61,12 +84,19 @@ CREATE TABLE `users` (
   `last_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
   `email` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
   `password` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL
+  `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL,
+  `points` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
 -- Indexek a kiírt táblákhoz
 --
+
+--
+-- A tábla indexei `chats`
+--
+ALTER TABLE `chats`
+  ADD PRIMARY KEY (`chat_id`);
 
 --
 -- A tábla indexei `foods`
@@ -91,10 +121,16 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT a táblához `chats`
+--
+ALTER TABLE `chats`
+  MODIFY `chat_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT a táblához `foods`
 --
 ALTER TABLE `foods`
-  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT a táblához `nutritions`

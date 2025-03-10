@@ -88,7 +88,7 @@ const getChat = async (req, res) => {
         return;
     }
     try{
-        const [ json ] = await connection.execute(`select * from chats where sender_id=? and recipient_id=?`, req.params.sender_id, req.params.recipient_id);
+        const [ json ] = await connection.execute(`select u1.first_name, u1.last_name, u2.first_name, u2.last_name, message from chats inner join users as u1 on u1.user_id=sender_id inner join users as u2 on u2.user_id=recipient_id where sender_id=? and recipient_id=?`, req.params.sender_id, req.params.recipient_id);
         res.status(200).send(json);
     } catch (err) {
         res.status(500).send({ error : "Internal Server Error!" });
