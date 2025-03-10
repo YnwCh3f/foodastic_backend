@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Feb 17. 11:19
+-- Létrehozás ideje: 2025. Feb 24. 11:55
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -21,6 +21,8 @@ SET time_zone = "+00:00";
 --
 -- Adatbázis: `foodastic`
 --
+CREATE DATABASE IF NOT EXISTS `foodastic` DEFAULT CHARACTER SET utf8 COLLATE utf8_hungarian_ci;
+USE `foodastic`;
 
 -- --------------------------------------------------------
 
@@ -33,6 +35,18 @@ CREATE TABLE `foods` (
   `name` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
   `price` int(11) NOT NULL,
   `image` varchar(30) COLLATE utf8_hungarian_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `nutritions`
+--
+
+CREATE TABLE `nutritions` (
+  `nutrition_id` int(11) NOT NULL,
+  `food_id` int(11) NOT NULL,
+  `kcal` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -61,6 +75,12 @@ ALTER TABLE `foods`
   ADD PRIMARY KEY (`food_id`);
 
 --
+-- A tábla indexei `nutritions`
+--
+ALTER TABLE `nutritions`
+  ADD PRIMARY KEY (`nutrition_id`);
+
+--
 -- A tábla indexei `users`
 --
 ALTER TABLE `users`
@@ -75,6 +95,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `foods`
   MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `nutritions`
+--
+ALTER TABLE `nutritions`
+  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `users`
