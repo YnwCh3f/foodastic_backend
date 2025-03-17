@@ -182,6 +182,18 @@ const newMessage = async (req, res) => {
     }
 }
 
+const addToCart = async (req, res) => {
+    if (!(req.body.user_id && req.body.food_id)){
+        res.status(400).send({ error : "Bad Request!" });
+        return;
+    }
+    try{
+        await connection.execute(`insert into cart set user_id=?, food_id=?`, req.body.user_id, req.body.food_id);
+        res.status(201).send({ status : "Created" });
+    } catch (error) {
+        res.status(500).send({ error : "Internal Server Error!" });
+    }
+}
 
 
 const del = async (req, res, table) => {
@@ -191,6 +203,32 @@ const del = async (req, res, table) => {
     }
     try{
         await connection.execute(`delete from ${table} where ${table.substring(0, table.length-1)}_id=?`, req.params.id);
+        res.status(200).send({ status : "OK" });
+    } catch (error) {
+        res.status(500).send({ error : "Internal Server Error!" });
+    }
+}
+
+const delFromCart = async (req, res) => {
+    if (!(req.params.user_id && req.params.food_id)){
+        res.status(400).send({ error : "ID not found!" });
+        return;
+    }
+    try{
+        await connection.execute(`delete from cart where user_id=? and food_id=?`, req.params.user_id, req.params.food_id);
+        res.status(200).send({ status : "OK" });
+    } catch (error) {
+        res.status(500).send({ error : "Internal Server Error!" });
+    }
+}
+
+const clearCart = async (req, res) => {
+    if (!(req.params.user_id)){
+        res.status(400).send({ error : "ID not found!" });
+        return;
+    }
+    try{
+        await connection.execute(`delete from cart where user_id=?`, req.params.user_id);
         res.status(200).send({ status : "OK" });
     } catch (error) {
         res.status(500).send({ error : "Internal Server Error!" });
@@ -336,18 +374,22 @@ app.get("/", (req, res) => res.status(200).send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
-app.get("/chat/:sender_id/:recipient_id", getChat)
+app.get("/chat/:sender_id/:recipient_id", getChat);
+app.get("/login", login);
 
 
 app.post("/food", newFood);
 app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
 app.post("/message", newMessage);
+app.post("/addToCart", addToCart);
 
 
 app.delete("/food/:id", (req, res) => del(req, res, "foods"));
 app.delete("/user/:id", (req, res) => del(req, res, "users"));
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions"));
+app.delete("/delFromCart", delFromCart)
+app.delete("/clearCart", clearCart)
 
 
 app.put("/food/:id", modFood);

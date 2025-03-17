@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 10. 13:21
+-- Létrehozás ideje: 2025. Már 17. 11:47
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -23,6 +23,38 @@ SET time_zone = "+00:00";
 --
 CREATE DATABASE IF NOT EXISTS `foodastic` DEFAULT CHARACTER SET utf8 COLLATE utf8_hungarian_ci;
 USE `foodastic`;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `allergens`
+--
+
+CREATE TABLE `allergens` (
+  `food_id` int(11) NOT NULL,
+  `gluten` tinyint(1) NOT NULL,
+  `lactose` tinyint(1) NOT NULL,
+  `nuts` tinyint(1) NOT NULL,
+  `mussels` tinyint(1) NOT NULL,
+  `fish` tinyint(1) NOT NULL,
+  `egg` tinyint(1) NOT NULL,
+  `soy` tinyint(1) NOT NULL,
+  `celery` tinyint(1) NOT NULL,
+  `mustard` tinyint(1) NOT NULL,
+  `mollusk` tinyint(1) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `cart`
+--
+
+CREATE TABLE `cart` (
+  `cart_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `food_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
 
@@ -93,6 +125,12 @@ CREATE TABLE `users` (
 --
 
 --
+-- A tábla indexei `cart`
+--
+ALTER TABLE `cart`
+  ADD PRIMARY KEY (`cart_id`);
+
+--
 -- A tábla indexei `chats`
 --
 ALTER TABLE `chats`
@@ -119,6 +157,12 @@ ALTER TABLE `users`
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
 --
+
+--
+-- AUTO_INCREMENT a táblához `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `chats`
