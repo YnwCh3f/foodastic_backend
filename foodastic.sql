@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 17. 11:47
+-- Létrehozás ideje: 2025. Már 17. 14:47
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -35,12 +35,9 @@ CREATE TABLE `allergens` (
   `gluten` tinyint(1) NOT NULL,
   `lactose` tinyint(1) NOT NULL,
   `nuts` tinyint(1) NOT NULL,
-  `mussels` tinyint(1) NOT NULL,
   `fish` tinyint(1) NOT NULL,
   `egg` tinyint(1) NOT NULL,
   `soy` tinyint(1) NOT NULL,
-  `celery` tinyint(1) NOT NULL,
-  `mustard` tinyint(1) NOT NULL,
   `mollusk` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
@@ -87,10 +84,16 @@ CREATE TABLE `foods` (
 --
 
 INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
-(1, 'asd', 1200, '-; delete from foods where 1=='),
-(2, 'asd', 1200, '-; delete from foods where 1=='),
-(3, 'asd', 1200, '-; delete from foods where 1=='),
-(4, 'asd', 1200, '-; delete from foods where 1=1');
+(1, 'Pizza Margherita', 10, 'pizza_margherita.jpg'),
+(2, 'Cheeseburger', 7, 'cheeseburger.jpg'),
+(3, 'Caesar Salad', 7, 'caesar_salad.jpg'),
+(4, 'Pasta Alfredo', 13, 'pasta_alfredo.jpg'),
+(5, 'Sushi Roll', 15, 'sushi_roll.jpg'),
+(6, 'Tacos', 6, 'tacos.jpg'),
+(7, 'Vegetable Stir Fry', 8, 'vegetable_stir_fry.jpg'),
+(8, 'Chicken Wings', 11, 'chicken_wings.jpg'),
+(9, 'Grilled Cheese', 5, 'grilled_cheese.jpg'),
+(10, 'Chocolate Cake', 4, 'chocolate_cake.jpg');
 
 -- --------------------------------------------------------
 
@@ -174,7 +177,7 @@ ALTER TABLE `chats`
 -- AUTO_INCREMENT a táblához `foods`
 --
 ALTER TABLE `foods`
-  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT a táblához `nutritions`
