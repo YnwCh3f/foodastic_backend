@@ -50,17 +50,18 @@ const getFoods = async (req, res) => {
     let filters = "";
     let search = "";
     if (req.body.name) {
-        search = `name like "${req.body.name}%"`
+        search = `name like "${req.body.name}%"`;
     }
-    if (req.body.kcal) {
+    if (req.body.minkcal && req.body.maxcal) {
         tables += ` inner join nutritions using(${table.substring(0, table.length - 1)}_id)`;
-        filters += `kcal>${req.body.minkcal} and kcal<${req.body.maxkcal}`
+        filters += `kcal>${req.body.minkcal} and kcal<${req.body.maxkcal}`;
     }
-    if (req.body.price) {
-        filters += `${filters.length > 0 ? " and " : ""}price>${req.body.minprice} and price<Ł${req.body.maxprice} `
+    if (req.body.allergens) {
+        tables += " inner join allergens using(food_id)";
+        filters += `gluten=${req.body.gluten} and lactose=${req.body.lactose} and nuts=${req.body.nuts} and fish=${req.body.fish} and egg=${req.body.egg} and soy=${req.body.soy} and mollusk=${req.body.mollusk}`;
     }
     try {
-        const [ json ] = await connection.query(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search);
+        const [json] = await connection.query(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -171,7 +172,7 @@ const newUser = async (req, res) => {
     }
 }
 
-const newNutrition = async (req, res) => { /* NEM JÓ */
+const newNutrition = async (req, res) => {
     if (!(req.body.food_id && req.body.kcal)) {
         res.status(400).send({ error: "Bad Request!" })
         return;
@@ -252,7 +253,7 @@ const clearCart = async (req, res) => {
 
 
 
-const mod = async (req, res, table) => {
+/*const mod = async (req, res, table) => {
     if (!(req.params.id)) {
         res.status(404).send({ error: "ID not found!" });
         return;
@@ -280,7 +281,7 @@ const mod = async (req, res, table) => {
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
-}
+}*/
 
 const modFood = async (req, res) => {
     if (!(req.params.id)) {
@@ -316,7 +317,7 @@ const modUser = async (req, res) => {
     }
 }
 
-const modNutrition = async (req, res) => {  /* NEM JÓ */
+const modNutrition = async (req, res) => {
     if (!(req.params.id && req.body.kcal)) {
         res.status(400).send({ error: "Bad request!" });
         return;
@@ -332,9 +333,6 @@ const modNutrition = async (req, res) => {  /* NEM JÓ */
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
-
-
-
 
 const modPoints = async (req, res) => {
     if (!(req.params.id)) {
