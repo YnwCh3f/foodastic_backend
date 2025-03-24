@@ -121,6 +121,15 @@ const getCart = async (req, res) => {
     }
 }
 
+const getRestaurants = async (req, res) => {
+    try {
+        const [json] = await connection.query(`select * from restaurants`);
+        res.status(200).send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 
 
 /*const create = async (req, res, table) => {
@@ -217,6 +226,19 @@ const addToCart = async (req, res) => {
         await connection.execute(`insert into cart set user_id=?, food_id=?`, req.body.user_id, req.body.food_id);
         res.status(201).send({ status: "Created" });
     } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const newRestaurant = async (req, res) => {
+    if (!(req.body.restaurant_picture && req.params.restaurant_address)) {
+        res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    try {
+        const [json] = await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?`, req.body.restaurant_picture, req.params.restaurant_address);
+        res.status(200).send(json);
+    } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
@@ -400,6 +422,7 @@ app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
 app.get("/login", login);
 app.get("/cart", getCart);
+app.get("/restaurants", getRestaurants);
 
 
 app.post("/food", newFood);
@@ -407,13 +430,14 @@ app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
 app.post("/message", newMessage);
 app.post("/addToCart", addToCart);
-
+app.post("/restaurant", newRestaurant);
 
 app.delete("/food/:id", (req, res) => del(req, res, "foods"));
 app.delete("/user/:id", (req, res) => del(req, res, "users"));
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions"));
 app.delete("/delfromcart/:user_id/:food_id", delFromCart);
 app.delete("/clearcart/:user_id/", clearCart);
+app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants"));
 
 
 app.put("/food/:id", modFood);

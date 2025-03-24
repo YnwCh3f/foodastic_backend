@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 17. 14:47
+-- Létrehozás ideje: 2025. Már 24. 13:26
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -110,6 +110,18 @@ CREATE TABLE `nutritions` (
 -- --------------------------------------------------------
 
 --
+-- Tábla szerkezet ehhez a táblához `restaurants`
+--
+
+CREATE TABLE `restaurants` (
+  `restaurant_id` int(11) NOT NULL,
+  `restaurant_picture` text COLLATE utf8_hungarian_ci NOT NULL,
+  `restaurant_address` varchar(32) COLLATE utf8_hungarian_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Tábla szerkezet ehhez a táblához `users`
 --
 
@@ -152,6 +164,12 @@ ALTER TABLE `nutritions`
   ADD PRIMARY KEY (`nutrition_id`);
 
 --
+-- A tábla indexei `restaurants`
+--
+ALTER TABLE `restaurants`
+  ADD PRIMARY KEY (`restaurant_id`);
+
+--
 -- A tábla indexei `users`
 --
 ALTER TABLE `users`
@@ -184,6 +202,12 @@ ALTER TABLE `foods`
 --
 ALTER TABLE `nutritions`
   MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT a táblához `restaurants`
+--
+ALTER TABLE `restaurants`
+  MODIFY `restaurant_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `users`
