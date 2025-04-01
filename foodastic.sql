@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 24. 13:26
--- Kiszolgáló verziója: 10.4.6-MariaDB
--- PHP verzió: 7.3.8
+-- Létrehozás ideje: 2025. Ápr 01. 21:28
+-- Kiszolgáló verziója: 10.4.32-MariaDB
+-- PHP verzió: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -41,6 +40,22 @@ CREATE TABLE `allergens` (
   `mollusk` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
+--
+-- A tábla adatainak kiíratása `allergens`
+--
+
+INSERT INTO `allergens` (`food_id`, `gluten`, `lactose`, `nuts`, `fish`, `egg`, `soy`, `mollusk`) VALUES
+(1, 0, 1, 0, 0, 1, 0, 1),
+(2, 1, 0, 1, 0, 0, 1, 0),
+(3, 0, 0, 0, 1, 1, 0, 0),
+(4, 1, 1, 0, 0, 0, 1, 1),
+(5, 0, 1, 1, 1, 0, 0, 0),
+(6, 1, 0, 0, 0, 1, 1, 1),
+(7, 0, 0, 1, 1, 0, 1, 0),
+(8, 1, 1, 0, 0, 1, 0, 1),
+(9, 0, 0, 1, 1, 0, 0, 1),
+(10, 1, 1, 1, 0, 1, 1, 0);
+
 -- --------------------------------------------------------
 
 --
@@ -63,7 +78,7 @@ CREATE TABLE `chats` (
   `chat_id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
   `recipient_id` int(11) NOT NULL,
-  `message` text COLLATE utf8_hungarian_ci NOT NULL
+  `message` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -74,9 +89,9 @@ CREATE TABLE `chats` (
 
 CREATE TABLE `foods` (
   `food_id` int(11) NOT NULL,
-  `name` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
+  `name` varchar(32) NOT NULL,
   `price` int(11) NOT NULL,
-  `image` varchar(30) COLLATE utf8_hungarian_ci NOT NULL
+  `image` tinytext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
@@ -84,16 +99,16 @@ CREATE TABLE `foods` (
 --
 
 INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
-(1, 'Pizza Margherita', 10, 'pizza_margherita.jpg'),
-(2, 'Cheeseburger', 7, 'cheeseburger.jpg'),
-(3, 'Caesar Salad', 7, 'caesar_salad.jpg'),
-(4, 'Pasta Alfredo', 13, 'pasta_alfredo.jpg'),
-(5, 'Sushi Roll', 15, 'sushi_roll.jpg'),
-(6, 'Tacos', 6, 'tacos.jpg'),
-(7, 'Vegetable Stir Fry', 8, 'vegetable_stir_fry.jpg'),
-(8, 'Chicken Wings', 11, 'chicken_wings.jpg'),
-(9, 'Grilled Cheese', 5, 'grilled_cheese.jpg'),
-(10, 'Chocolate Cake', 4, 'chocolate_cake.jpg');
+(1, 'Margherita Pizza', 3490, 'https://caitsplate.com/wp-core/wp-content/uploads/2020/04/IMG_0078-300x300.jpg'),
+(2, 'Cheeseburger', 2990, 'https://www.kitchensanctuary.com/wp-content/uploads/2021/05/Double-Cheeseburger-square-FS-42-300x300.jpg'),
+(3, 'Caesar Salad', 2590, 'https://www.noracooks.com/wp-content/uploads/2022/06/vegan-caesar-salad-4-300x300.jpg'),
+(4, 'Spaghetti Carbonara', 3790, 'https://www.tasteofhome.com/wp-content/uploads/2018/01/exps8879_QC2785C59A-3.jpg'),
+(5, 'Grilled Salmon', 4890, 'https://res.cloudinary.com/hksqkdlah/image/upload/ar_1:1,c_fill,dpr_2.0,f_auto,fl_lossy.progressive.strip_profile,g_faces:auto,q_auto:low,w_150/41765-sfs-grilled-salmon-10664'),
+(6, 'Chicken Tikka Masala', 4190, 'https://www.kitchensanctuary.com/wp-content/uploads/2019/09/Chicken-Tikka-Masala-square-FS-51-300x300.jpg.webp'),
+(7, 'Sushi Platter', 5790, 'https://images.squarespace-cdn.com/content/v1/5021287084ae954efd31e9f4/1607482720127-ODLTGIEZG0DY4PHQ614O/F0671251-453B-44FE-8625-00E6FB2E9222?format=300w'),
+(8, 'Vegetable Stir Fry', 2890, 'https://www.maryswholelife.com/wp-content/uploads/2022/03/Pad_Pak_05-300x300.jpg'),
+(9, 'BBQ Ribs', 5290, 'https://indianakitchen.com/wp-content/uploads/2015/03/st.louis_.jpg'),
+(10, 'Chocolate Lava Cake', 2390, 'https://www.livewellbakeoften.com/wp-content/uploads/2017/01/Molten-Chocolate-Lava-Cakes-for-Two-4-300x300-1.jpg');
 
 -- --------------------------------------------------------
 
@@ -107,6 +122,22 @@ CREATE TABLE `nutritions` (
   `kcal` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
+--
+-- A tábla adatainak kiíratása `nutritions`
+--
+
+INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
+(2, 1, 745),
+(3, 2, 612),
+(4, 3, 890),
+(5, 4, 530),
+(6, 5, 978),
+(7, 6, 450),
+(8, 7, 820),
+(9, 8, 670),
+(10, 9, 915),
+(11, 10, 590);
+
 -- --------------------------------------------------------
 
 --
@@ -115,8 +146,8 @@ CREATE TABLE `nutritions` (
 
 CREATE TABLE `restaurants` (
   `restaurant_id` int(11) NOT NULL,
-  `restaurant_picture` text COLLATE utf8_hungarian_ci NOT NULL,
-  `restaurant_address` varchar(32) COLLATE utf8_hungarian_ci NOT NULL
+  `restaurant_picture` text NOT NULL,
+  `restaurant_address` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -127,11 +158,11 @@ CREATE TABLE `restaurants` (
 
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
-  `first_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `last_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `email` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
-  `password` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL,
+  `first_name` varchar(16) NOT NULL,
+  `last_name` varchar(16) NOT NULL,
+  `email` varchar(20) NOT NULL,
+  `password` varchar(16) NOT NULL,
+  `profile_picture` varchar(30) NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
@@ -201,7 +232,7 @@ ALTER TABLE `foods`
 -- AUTO_INCREMENT a táblához `nutritions`
 --
 ALTER TABLE `nutritions`
-  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT a táblához `restaurants`
