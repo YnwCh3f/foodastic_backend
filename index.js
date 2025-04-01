@@ -33,7 +33,7 @@ const getFoods = async (req, res) => {
     let tables = "foods";
     let filters = "";
     let search = "";
-    const { gluten, lactose, nuts, mollusk, fish, egg, soy, minkcal, maxkcal, name } = req.query;
+    const { minkcal, maxkcal, name } = req.query;
     //console.log(req.query)
     if (name) {
         search = `name like "${name}%"`;
@@ -42,13 +42,19 @@ const getFoods = async (req, res) => {
         tables += ` inner join nutritions using(food_id)`;
         filters += `kcal>${minkcal} and kcal<${maxkcal}`;
     }
-    //console.log(req.query)
-    if (gluten == "false" || lactose == "false" || nuts == "false" || mollusk == "false" || fish == "false" || egg == "false" || soy == "false") {
+    let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
+    let allergens = [];
+    if (req.query.allergens){
+        let arr = JSON.parse(req.query.allergens);
+       for (let a of arr){
+            if (JSON.stringify(a).includes("false")) allergens.push(allergenNames[arr.indexOf(a)]+"=false");
+        }
+    } 
+    if (allergens.length > 0) {
         tables += " inner join allergens using(food_id)";
-        filters += `${filters != "" ? " and" : ""}`;
+        filters += `${filters != "" ? " and " : ""}${allergens.map(x => x).join(" and ")}`;
     }
-
-    let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search;
+    let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search + ";";
     console.log(query);
     try {
         const [json] = await connection.query(query);
