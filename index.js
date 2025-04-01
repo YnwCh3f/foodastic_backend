@@ -34,13 +34,12 @@ const getFoods = async (req, res) => {
     let filters = "";
     let search = "";
     const { minkcal, maxkcal, name } = req.query;
-    //console.log(req.query)
     if (name) {
         search = `name like "${name}%"`;
     }
     if (minkcal && maxkcal && !(minkcal == 0 && maxkcal == 0)) {
         tables += ` inner join nutritions using(food_id)`;
-        filters += `kcal>${minkcal} and kcal<${maxkcal}`;
+        filters += `kcal>=${minkcal} and kcal<=${maxkcal}`;
     }
     let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
     let allergens = [];
@@ -364,7 +363,6 @@ const contains = async (table, column, value) => {
     return json.length == 0;
 }
 
-
 const login = async (req, res) => {
     if (!req.body.email && req.body.password) {
         res.status(400).send({ error: "Bad Request!" });
@@ -420,6 +418,25 @@ app.patch("/message", modMessage);
 const port = process.env.API_PORT || 89;
 
 app.listen(port, err => console.log(err ? err : `Server runnin' on port :${port}`));
+
+
+
+/*
+
+
+INSERT INTO restaurants SET restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/harbour-house-bristol.jpeg', restaurant_address='123 Main St, City';
+
+INSERT INTO restaurants SET restaurant_picture='https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/53/ce/70/dinerbon-restaurant-pomphuis.jpg?w=500&h=300&s=1', restaurant_address='456 Elm St, City';
+
+INSERT INTO restaurants SET restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/restaurant:maison-by-glaschu.jpg', restaurant_address='789 Oak St, City';
+
+INSERT INTO restaurants SET restaurant_name='The Gourmet Spot', restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/harbour-house-bristol.jpeg', restaurant_address='123 Main St, City';
+
+INSERT INTO restaurants SET restaurant_name='Urban Bites', restaurant_picture='https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/53/ce/70/dinerbon-restaurant-pomphuis.jpg?w=500&h=300&s=1', restaurant_address='456 Elm St, City';
+
+INSERT INTO restaurants SET restaurant_name='Cozy Corner Cafe', restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/restaurant:maison-by-glaschu.jpg', restaurant_address='789 Oak St, City';
+
+*/
 
 
 /*const get = async (req, res, table) => {
