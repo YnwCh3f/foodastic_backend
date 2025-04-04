@@ -4,19 +4,22 @@ import { describe, test, expect } from "vitest";
 //  GET
 
 describe('GET /foods', () => {
-    test("", () =>{
-
-    })
+    test("", async () =>{
+        const res = await fetch("http://localhost:88/foods");
+        expect(res.status).toBe(200);
+    });
 });
 
 describe('GET /users', () => {
-    test("", () =>{
-
+    test("", async () =>{
+        const res = await fetch("http://localhost:88/users");
+        expect(res.status).toBe(200);
     })
 });
 describe('GET /nutritions', () => {
-    test("", () =>{
-
+    test("", async () =>{
+        const res = await fetch("http://localhost:88/nutritions");
+        expect(res.status).toBe(200);
     })
 });
 describe('GET /chat/:sender_id/:recipient_id', () => {

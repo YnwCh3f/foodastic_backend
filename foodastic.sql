@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 4.9.0.1
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 01. 21:28
--- Kiszolgáló verziója: 10.4.32-MariaDB
--- PHP verzió: 8.2.12
+-- Létrehozás ideje: 2025. Ápr 04. 10:15
+-- Kiszolgáló verziója: 10.4.6-MariaDB
+-- PHP verzió: 7.3.8
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -78,7 +79,7 @@ CREATE TABLE `chats` (
   `chat_id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
   `recipient_id` int(11) NOT NULL,
-  `message` text NOT NULL
+  `message` text COLLATE utf8_hungarian_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -89,9 +90,9 @@ CREATE TABLE `chats` (
 
 CREATE TABLE `foods` (
   `food_id` int(11) NOT NULL,
-  `name` varchar(32) NOT NULL,
+  `name` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
   `price` int(11) NOT NULL,
-  `image` tinytext NOT NULL
+  `image` tinytext COLLATE utf8_hungarian_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
@@ -146,9 +147,19 @@ INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
 
 CREATE TABLE `restaurants` (
   `restaurant_id` int(11) NOT NULL,
-  `restaurant_picture` text NOT NULL,
-  `restaurant_address` varchar(32) NOT NULL
+  `restaurant_name` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
+  `restaurant_picture` text COLLATE utf8_hungarian_ci NOT NULL,
+  `restaurant_address` varchar(32) COLLATE utf8_hungarian_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `restaurants`
+--
+
+INSERT INTO `restaurants` (`restaurant_id`, `restaurant_name`, `restaurant_picture`, `restaurant_address`) VALUES
+(1, 'The Gourmet Spot', 'https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/harbour-house-bristol.jpeg', '123 Main St, City'),
+(2, 'Urban Bites', 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/53/ce/70/dinerbon-restaurant-pomphuis.jpg?w=500&h=300&s=1', '456 Elm St, City'),
+(3, 'Cozy Corner Cafe', 'https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/restaurant:maison-by-glaschu.jpg', '789 Oak St, City');
 
 -- --------------------------------------------------------
 
@@ -158,11 +169,11 @@ CREATE TABLE `restaurants` (
 
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
-  `first_name` varchar(16) NOT NULL,
-  `last_name` varchar(16) NOT NULL,
-  `email` varchar(20) NOT NULL,
-  `password` varchar(16) NOT NULL,
-  `profile_picture` varchar(30) NOT NULL,
+  `first_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
+  `last_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
+  `email` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
+  `password` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
+  `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
@@ -238,7 +249,7 @@ ALTER TABLE `nutritions`
 -- AUTO_INCREMENT a táblához `restaurants`
 --
 ALTER TABLE `restaurants`
-  MODIFY `restaurant_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `restaurant_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT a táblához `users`
