@@ -20,12 +20,14 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-app.use(rateLimit({
+/*app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 100,
     standardHeaders: 'draft-8',
     legacyHeaders: false
-}));
+}));*/
+
+
 
 
 
@@ -115,6 +117,15 @@ const getRestaurants = async (req, res) => {
     }
 }
 
+const getOrders = async (req, res) => {
+    try {
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=?`, [req.params.id]);
+        res.status(200).send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 
 
 const newFood = async (req, res) => {
@@ -135,13 +146,13 @@ const newUser = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" })
         return;
     }
-    if (await contains("users", "email", req.body.email)){
-        res.status(409).send({ error : "Email address already in use!" });
+    if (await contains("users", "email", req.body.email)) {
+        res.status(409).send({ error: "Email address already in use!" });
         return;
     }
     try {
         await connection.execute(`insert into users set first_name=?, last_name=?, email=?, password=sha2(?, 256), role='user'`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password]);
-        res.status(201).send({ status: "Created", first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email, role: "user" });
+        res.status(201).send({ status: "Created", first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email, role: "user", user_id: json[0].user_id });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -174,13 +185,19 @@ const newMessage = async (req, res) => {
 }
 
 const addToCart = async (req, res) => {
-    if (!(req.body.user_id && req.body.food_id)) {
+    if (!(req.body.user_id && req.body.cart)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
-        await connection.execute(`insert into cart set user_id=?, food_id=?`, [req.body.user_id, req.body.food_id]);
-        res.status(201).send({ status: "Created" });
+        let date = new Date().toJSON();
+        let cart_id = "#" + req.body.user_id + "" + date;
+        for (let i = 0; i < req.body.cart.length; i++) {
+            await connection.execute(`insert into cart set cart_id=? user_id=?, food_id=?, date=${date}, count=?, restaurant_id=?`, [cart_id, req.body.user_id, req.body.cart[i].food_id, req.body.cart[i].size, req.body.restaurant_id]);
+        }
+        await connection.execute(`insert into orders set cart_id=?`, [cart_id]);
+        const [json] = connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
+        res.status(201).send({ status: "Created", order_id: json.order_id });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -198,6 +215,7 @@ const newRestaurant = async (req, res) => {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
+
 
 
 
@@ -374,13 +392,13 @@ const login = async (req, res) => {
     }
     try {
         const [j] = await connection.execute("select * from users where email=?", [req.body.email]);
-        if (j.length == 0){
+        if (j.length == 0) {
             res.status(404).send({ error: "User not found!" });
             return;
-        } 
+        }
         const [json] = await connection.execute("select * from users where email=? and password=sha2(?, 256)", [req.body.email, req.body.password]);
         //console.log(json.first_name);
-        if (json.length > 0) res.status(200).send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role });
+        if (json.length > 0) res.status(200).send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role, user_id: json[0].user_id });
         else res.status(401).send({ error: "Wrong password!" })
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" })
@@ -396,13 +414,14 @@ app.get("/chat/:sender_id/:recipient_id", getChat);
 app.post("/login", login);
 app.get("/cart", getCart);
 app.get("/restaurants", getRestaurants);
+app.get("/orders/:id", getOrders);
 
 
 app.post("/food", newFood);
 app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
 app.post("/message", newMessage);
-app.post("/addToCart", addToCart);
+app.post("/addtocart", addToCart);
 app.post("/restaurant", newRestaurant);
 //app.post("/allergen", newAllergen);
 

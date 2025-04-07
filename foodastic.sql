@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 07. 13:09
+-- Létrehozás ideje: 2025. Ápr 07. 14:48
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -64,9 +64,12 @@ INSERT INTO `allergens` (`food_id`, `gluten`, `lactose`, `nuts`, `fish`, `egg`, 
 --
 
 CREATE TABLE `cart` (
-  `cart_id` int(11) NOT NULL,
+  `cart_id` varchar(50) COLLATE utf8_hungarian_ci NOT NULL,
   `user_id` int(11) NOT NULL,
-  `food_id` int(11) NOT NULL
+  `food_id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `count` int(11) NOT NULL,
+  `restaurant_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -142,6 +145,17 @@ INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Tábla szerkezet ehhez a táblához `orders`
+--
+
+CREATE TABLE `orders` (
+  `order_id` int(11) NOT NULL,
+  `cart_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Tábla szerkezet ehhez a táblához `restaurants`
 --
 
@@ -171,7 +185,7 @@ CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `first_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
   `last_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `email` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
+  `email` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
   `password` varchar(64) COLLATE utf8_hungarian_ci NOT NULL,
   `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0,
@@ -188,7 +202,9 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `password`, 
 (3, 'asdf', 'sd', 'anyd3@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
 (4, 'sdfaa', 'adf', 'anyd4@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
 (5, 'as', 'gfs', 'anyd5@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(6, 'asdf', 'sdf', 'anyd6@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user');
+(6, 'asdf', 'sdf', 'anyd6@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
+(7, 'Ahh', 'Goofy', 'goofyaah@citrommail.', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '', 0, 'user'),
+(8, 'ouődasf', 'osdufh', 'anyd7@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user');
 
 --
 -- Indexek a kiírt táblákhoz
@@ -219,6 +235,12 @@ ALTER TABLE `nutritions`
   ADD PRIMARY KEY (`nutrition_id`);
 
 --
+-- A tábla indexei `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`order_id`);
+
+--
 -- A tábla indexei `restaurants`
 --
 ALTER TABLE `restaurants`
@@ -233,12 +255,6 @@ ALTER TABLE `users`
 --
 -- A kiírt táblák AUTO_INCREMENT értéke
 --
-
---
--- AUTO_INCREMENT a táblához `cart`
---
-ALTER TABLE `cart`
-  MODIFY `cart_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT a táblához `chats`
@@ -259,6 +275,12 @@ ALTER TABLE `nutritions`
   MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
+-- AUTO_INCREMENT a táblához `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT a táblához `restaurants`
 --
 ALTER TABLE `restaurants`
@@ -268,7 +290,7 @@ ALTER TABLE `restaurants`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
