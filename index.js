@@ -43,20 +43,20 @@ const getFoods = async (req, res) => {
     }
     let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
     let allergens = [];
-    if (req.query.allergens){
+    if (req.query.allergens) {
         let arr = JSON.parse(req.query.allergens);
-       for (let a of arr){
-            if (JSON.stringify(a).includes("false")) allergens.push(allergenNames[arr.indexOf(a)]+"=false");
+        for (let a of arr) {
+            if (JSON.stringify(a).includes("false")) allergens.push(allergenNames[arr.indexOf(a)] + "=false");
         }
-    } 
+    }
     if (allergens.length > 0) {
         tables += " inner join allergens using(food_id)";
         filters += `${filters != "" ? " and " : ""}${allergens.map(x => x).join(" and ")}`;
     }
     let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search + ";";
-    console.log(query);
     try {
         const [json] = await connection.query(query);
+        console.log(json);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -131,13 +131,17 @@ const newFood = async (req, res) => {
 }
 
 const newUser = async (req, res) => {
-    if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password && req.body.profile_picture)) {
+    if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password)) {
         res.status(400).send({ error: "Bad Request!" })
         return;
     }
+    if (await contains("users", "email", req.body.email)){
+        res.status(409).send({ error : "Email address already in use!" });
+        return;
+    }
     try {
-        await connection.execute(`insert into users set first_name=?, last_name=?, email=?, password=?, profile_picture=?`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password, req.body.profile_picture]);
-        res.status(201).send({ status: "Created" });
+        await connection.execute(`insert into users set first_name=?, last_name=?, email=?, password=sha2(?, 256), role='user'`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password]);
+        res.status(201).send({ status: "Created", first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email, role: "user" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -359,19 +363,25 @@ const modPrice = async (req, res) => {
 
 
 const contains = async (table, column, value) => {
-    const [json] = await connection.execute(`select * from ${table} where ${column}=?`, value);
-    return json.length == 0;
+    const [json] = await connection.execute(`select * from ${table} where ${column}=?`, [value]);
+    return json.length != 0;
 }
 
 const login = async (req, res) => {
-    if (!req.body.email && req.body.password) {
+    if (!(req.body.email && req.body.password)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
-        const [json] = await connection.execute("select * from users where user_id=? and password=?", req.body.email, req.body.password);
-        if (json.length > 0) res.status(200).send({ status: "OK", first_name: json.first_name, last_name: json.last_name, role: json.role });
-        else res.status(404).send({ error: "User not found!" })
+        const [j] = await connection.execute("select * from users where email=?", [req.body.email]);
+        if (j.length == 0){
+            res.status(404).send({ error: "User not found!" });
+            return;
+        } 
+        const [json] = await connection.execute("select * from users where email=? and password=sha2(?, 256)", [req.body.email, req.body.password]);
+        //console.log(json.first_name);
+        if (json.length > 0) res.status(200).send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role });
+        else res.status(401).send({ error: "Wrong password!" })
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" })
     }
@@ -383,7 +393,7 @@ app.get("/foods", getFoods);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
-app.get("/login", login);
+app.post("/login", login);
 app.get("/cart", getCart);
 app.get("/restaurants", getRestaurants);
 
