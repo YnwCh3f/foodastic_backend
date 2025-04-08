@@ -27,6 +27,6 @@ Foodastic is a Node.js backend API for a food ordering system. It handles users,
 ## Installation
 
 ```bash
-git clone <repo-url>
-cd <project-folder>
-npm install
+git clone https://github.com/ynwch3f/foodastic_backend
+cd foodastic_backend
+pnpm install
