@@ -58,7 +58,7 @@ const getFoods = async (req, res) => {
     let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search + ";";
     try {
         const [json] = await connection.query(query);
-        console.log(json);
+        //console.log(json);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -97,12 +97,10 @@ const getChat = async (req, res) => {
 }
 
 const getCart = async (req, res) => {
-    if (!req.params.id) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
-    }
     try {
-        const [json] = await connection.execute(`select * from cart where user_id=?`, [req.params.id]);
+        const [json] = await connection.execute("select * from cart where user_id=?", [req.params.id])
+        if (json.length > 0) res.send(json);
+        else res.status(404).send({ error: "User not found!" })
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -163,6 +161,10 @@ const newNutrition = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" })
         return;
     }
+    if (contains("nutritions", "food_id", req.body.food_id)) {
+        res.status(409).send({ error: "Already in use!" })
+        return;
+    }
     try {
         await connection.execute(`insert into nutritions set food_id=?, kcal=?`, [req.body.food_id, req.body.kcal]);
         res.status(201).send({ status: "Created" });
@@ -172,13 +174,13 @@ const newNutrition = async (req, res) => {
 }
 
 const newMessage = async (req, res) => {
-    if (!(req.params.sender_id && req.params.recipient_id && req.body.message)) {
+    if (!req.body.message) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
         const [json] = await connection.execute(`insert into chats set sender_id=?, recipient_id=?, message=?`, [req.params.sender_id, req.params.recipient_id, req.body.message]);
-        res.status(200).send(json);
+        res.status(201).send({ status: "Created" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -204,13 +206,13 @@ const addToCart = async (req, res) => {
 }
 
 const newRestaurant = async (req, res) => {
-    if (!(req.body.restaurant_picture && req.params.restaurant_address)) {
+    if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
-        const [json] = await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?`, [req.body.restaurant_picture, req.params.restaurant_address]);
-        res.status(200).send(json);
+        const [json] = await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
+        res.status(201).send({ status: "Created" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -219,13 +221,13 @@ const newRestaurant = async (req, res) => {
 
 
 
-const del = async (req, res, table) => {
+const del = async (req, res, table, column, value) => {
     if (!(req.params.id)) {
         res.status(400).send({ error: "ID not found!" });
         return;
     }
     try {
-        await connection.execute(`delete from ${table} where ${table.substring(0, table.length - 1)}_id=?`, [req.params.id]);
+        await connection.execute(`delete from ${table} where ${column}=?`, [value]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -262,35 +264,27 @@ const clearCart = async (req, res) => {
 
 
 const modFood = async (req, res) => {
-    if (!(req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
-    }
     if (!(req.body.name && req.body.price && req.body.image)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
         await connection.execute(`update foods set name=?, price=?, image=? where food_id=?`, [req.body.name, req.body.price, req.body.image, req.params.id]);
-
         res.status(200).send({ status: "OK" });
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
 
 const modUser = async (req, res) => {
-    if (!(req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
-    }
-    if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password && req.body.profile_picture)) {
+    console.log(req.body)
+    if (!(req.body.first_name && req.body.last_name && req.body.password && req.body.profile_picture)) {
         res.status(400).send({ error: "Bad Request!" })
         return;
     }
     try {
-        await connection.query(`update users set first_name=?, last_name=?, email=?, password=?, profile_picture=? where user_id=?`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password, req.body.profile_picture, req.params.user_id]);
+        await connection.query(`update users set first_name=?, last_name=?, password=?, profile_picture=? where user_id=?`, [req.body.first_name, req.body.last_name, req.body.password, req.body.profile_picture, req.params.id]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -298,7 +292,7 @@ const modUser = async (req, res) => {
 }
 
 const modNutrition = async (req, res) => {
-    if (!(req.params.id && req.body.kcal)) {
+    if (!req.body.kcal) {
         res.status(400).send({ error: "Bad request!" });
         return;
     }
@@ -307,7 +301,7 @@ const modNutrition = async (req, res) => {
         return;
     }
     try {
-        await connection.query(`update foods where food_id=? set kcal=?`, [req.params.id, req.body.kcal]);
+        await connection.query(`update nutritions set kcal=? where food_id=? `, [req.body.kcal, req.params.id]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -315,12 +309,16 @@ const modNutrition = async (req, res) => {
 }
 
 const modPoints = async (req, res) => {
-    if (!(req.params.id)) {
+    if (!req.body.points) {
+        res.status(400).send({ error: "Bad request!" });
+        return;
+    }
+    if (!(await contains("users", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
     try {
-        await connection.query(`update users where user_id=? set points=?`, [req.params.id, req.params.points]);
+        await connection.query(`update users set points=? where user_id=? `, [req.body.points, req.params.id]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -328,13 +326,13 @@ const modPoints = async (req, res) => {
 }
 
 const modMessage = async (req, res) => {
-    if (!(req.params.sender_id && req.params.recipient_id && req.body.message)) {
+    if (!(req.body.message)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
-        const [json] = await connection.execute(`update chats and recipient_id=? set message=? where sender_id=?`, [req.params.recipient_id, req.body.message, req.params.sender_id]);
-        res.status(200).send(json);
+        const [json] = await connection.execute(`update chats set message=? where chat_id=?`, [req.body.message, req.params.id]);
+        res.status(200).send({ staus: "OK" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -342,12 +340,12 @@ const modMessage = async (req, res) => {
 
 
 const modImage = async (req, res) => {
-    if (!(req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
-    }
     if (!(req.body.image)) {
         res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    if (!(await contains("foods", "food_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
         return;
     }
     try {
@@ -355,18 +353,18 @@ const modImage = async (req, res) => {
 
         res.status(200).send({ status: "OK" });
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
 
 const modPrice = async (req, res) => {
-    if (!(req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
+    if (!req.body.price) {
+        res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(req.body.price)) {
-        res.status(400).send({ error: "Bad Request!" });
+    if (!(await contains("foods", "food_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
         return;
     }
     try {
@@ -374,7 +372,7 @@ const modPrice = async (req, res) => {
 
         res.status(200).send({ status: "OK" });
     } catch (error) {
-        console.log(error);
+        //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
@@ -382,6 +380,7 @@ const modPrice = async (req, res) => {
 
 const contains = async (table, column, value) => {
     const [json] = await connection.execute(`select * from ${table} where ${column}=?`, [value]);
+    //console.log(json)
     return json.length != 0;
 }
 
@@ -390,14 +389,12 @@ const login = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
+    if (!(await contains("users", "email", req.body.email))) {
+        res.status(404).send({ error: "User not found!" });
+        return;
+    }
     try {
-        const [j] = await connection.execute("select * from users where email=?", [req.body.email]);
-        if (j.length == 0) {
-            res.status(404).send({ error: "User not found!" });
-            return;
-        }
         const [json] = await connection.execute("select * from users where email=? and password=sha2(?, 256)", [req.body.email, req.body.password]);
-        //console.log(json.first_name);
         if (json.length > 0) res.status(200).send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role, user_id: json[0].user_id });
         else res.status(401).send({ error: "Wrong password!" })
     } catch (err) {
@@ -411,8 +408,7 @@ app.get("/foods", getFoods);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
-app.post("/login", login);
-app.get("/cart", getCart);
+app.get("/cart/:id", getCart);
 app.get("/restaurants", getRestaurants);
 app.get("/orders/:id", getOrders);
 
@@ -420,17 +416,18 @@ app.get("/orders/:id", getOrders);
 app.post("/food", newFood);
 app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
-app.post("/message", newMessage);
+app.post("/message/:sender_id/:recipient_id", newMessage);
 app.post("/addtocart", addToCart);
 app.post("/restaurant", newRestaurant);
+app.post("/login", login);
 //app.post("/allergen", newAllergen);
 
-app.delete("/food/:id", (req, res) => del(req, res, "foods"));
-app.delete("/user/:id", (req, res) => del(req, res, "users"));
-app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions"));
+app.delete("/food/:id", (req, res) => del(req, res, "foods", "food_id", req.params.id));
+app.delete("/user/:id", (req, res) => del(req, res, "users", "user_id", req.params.id));
+app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions", "food_id", req.params.id));
 app.delete("/delfromcart/:user_id/:food_id", delFromCart);
 app.delete("/clearcart/:user_id/", clearCart);
-app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants"));
+app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants", "restaurant_id", req.params.id));
 
 
 app.put("/food/:id", modFood);
@@ -442,7 +439,7 @@ app.patch("/foodimage/:id", modImage);
 app.patch("/foodprice/:id", modPrice);
 
 app.patch("/user/points/:id", modPoints);
-app.patch("/message", modMessage);
+app.patch("/message/:id", modMessage);
 
 const port = process.env.API_PORT || 89;
 
