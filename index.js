@@ -20,14 +20,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-/*app.use(rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 100,
-    standardHeaders: 'draft-8',
-    legacyHeaders: false
-}));*/
-
-
 
 
 
@@ -124,6 +116,15 @@ const getOrders = async (req, res) => {
     }
 }
 
+const getOrderHistory = async (req, res) => {
+    try {
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=?`, [req.params.id]);
+        res.status(200).send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 
 
 const newFood = async (req, res) => {
@@ -187,23 +188,27 @@ const newMessage = async (req, res) => {
 }
 
 const addToCart = async (req, res) => {
-    if (!(req.body.user_id && req.body.cart)) {
+    if (!(req.body.user_id && req.body.cart && req.body.restaurant_id)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
     try {
         let date = new Date().toJSON();
-        let cart_id = "#" + req.body.user_id + "" + date;
+        let cart_id = "#" + req.body.user_id + "/" + date;
+        console.log(cart_id);
+        console.log(req.body.cart.length);
         for (let i = 0; i < req.body.cart.length; i++) {
-            await connection.execute(`insert into cart set cart_id=? user_id=?, food_id=?, date=${date}, count=?, restaurant_id=?`, [cart_id, req.body.user_id, req.body.cart[i].food_id, req.body.cart[i].size, req.body.restaurant_id]);
+            await connection.execute(`insert into cart set cart_id=?, food_id=?, date="${date}", count=?`, [cart_id, req.body.cart[i].food_id, req.body.cart[i].size]);
         }
-        await connection.execute(`insert into orders set cart_id=?`, [cart_id]);
-        const [json] = connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
+        await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?`, [cart_id, req.body.restaurant_id, req.body.user_id]);
+        const [json] = await connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
         res.status(201).send({ status: "Created", order_id: json.order_id });
     } catch (error) {
+        console.log(error)
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
+
 
 const newRestaurant = async (req, res) => {
     if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name)) {
@@ -411,6 +416,7 @@ app.get("/chat/:sender_id/:recipient_id", getChat);
 app.get("/cart/:id", getCart);
 app.get("/restaurants", getRestaurants);
 app.get("/orders/:id", getOrders);
+app.get("/orderhistory/:id", getOrderHistory);
 
 
 app.post("/food", newFood);
@@ -444,113 +450,3 @@ app.patch("/message/:id", modMessage);
 const port = process.env.API_PORT || 89;
 
 app.listen(port, err => console.log(err ? err : `Server runnin' on port :${port}`));
-
-
-
-/*
-
-
-INSERT INTO restaurants SET restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/harbour-house-bristol.jpeg', restaurant_address='123 Main St, City';
-
-INSERT INTO restaurants SET restaurant_picture='https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/53/ce/70/dinerbon-restaurant-pomphuis.jpg?w=500&h=300&s=1', restaurant_address='456 Elm St, City';
-
-INSERT INTO restaurants SET restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/restaurant:maison-by-glaschu.jpg', restaurant_address='789 Oak St, City';
-
-INSERT INTO restaurants SET restaurant_name='The Gourmet Spot', restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/harbour-house-bristol.jpeg', restaurant_address='123 Main St, City';
-
-INSERT INTO restaurants SET restaurant_name='Urban Bites', restaurant_picture='https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0d/53/ce/70/dinerbon-restaurant-pomphuis.jpg?w=500&h=300&s=1', restaurant_address='456 Elm St, City';
-
-INSERT INTO restaurants SET restaurant_name='Cozy Corner Cafe', restaurant_picture='https://s3-eu-west-1.amazonaws.com/wijnspijs/images/height300/restaurant:maison-by-glaschu.jpg', restaurant_address='789 Oak St, City';
-
-*/
-
-
-/*const get = async (req, res, table) => {
-    let tables = table; 
-    let filters = "";
-    let search = "";
-    if (table == "foods"){
-        if (req.body.name){
-            search = `name like "${req.body.name}%"` 
-        }
-        if (req.body.kcal){
-            tables += ` inner join nutritions using(${table.substring(0, table. length-1)}_id)`;
-            filters += `kcal=${req.body.kcal}`
-        }
-        if (req.body.price){
-            filters += `${filters.length > 0 ? " and " : ""}price=${req.body.price} `
-        }
-    }
-    //console.log(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search);
-    try{
-        const [ json ] = await connection.query(`select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search);
-        res.status(200).send(json);
-    } catch (error) {
-        res.status(500).send({ error : "Internal Server Error!" });
-    }
-}*/
-
-
-/*const mod = async (req, res, table) => {
-    if (!(req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
-    }
-    let columns;
-    switch (table) {
-        case "foods":
-            if (!(req.body.name && req.body.price && req.body.image)) {
-                res.status(400).send({ error: "Bad Request!" });
-                return;
-            }
-            columns = `name="${req.body.name}", price=${req.body.price}, image=${req.body.image}`
-            break;
-        case "users":
-            if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password && req.body.profile_picture)) {
-                res.status(400).send({ error: "Bad Request!" })
-                return;
-            }
-            columns = `first_name="${req.body.first_name}", last_name="${req.body.last_name}", email="${req.body.email}", password="${req.body.password}", profile_picture="${req.body.profile_picture}"`;
-            break;
-    }
-    try {
-        await connection.query(`update ${table} where ${table.substring(0, table.length - 1)}_id=${req.params.id} set ${columns}`);
-        res.status(200).send({ status: "OK" });
-    } catch (error) {
-        res.status(500).send({ error: "Internal Server Error!" });
-    }
-}*/
-
-
-/*const create = async (req, res, table) => {
-    let columns;
-    switch(table) {
-        case "foods":
-          if (!(req.body.name && req.body.price && req.body.image)){
-            res.status(400).send({ error : "Bad Request!" });
-            return;
-          }
-          columns = `name="${req.body.name}", price=${req.body.price}, image="${req.body.image}"`  
-          break;
-        case "users":
-          if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password && req.body.profile_picture)){
-            res.status(400).send({ error : "Bad Request!" })
-            return;
-           }
-          columns = `first_name="${req.body.first_name}", last_name="${req.body.last_name}", email="${req.body.email}", password="${req.body.password}", profile_picture="${req.body.profile_picture}"`;
-          break;
-        case "nutritions":
-            if (!(req.body.food_id && req.body.kcal)){
-                res.status(400).send({ error : "Bad Request!" })
-                return;
-            }
-            columns = `food_id=${req.body.food_id}, kcal=${req.body.kcal}`;
-    } 
-    console.log(`insert into ${table} set ${columns}`);
-    try{
-        await connection.query(`insert into ${table} set ${columns}`);
-        res.status(201).send({ status : "Created" });
-    } catch (error) {
-        res.status(500).send({ error : "Internal Server Error!" });
-    }
-}*/
