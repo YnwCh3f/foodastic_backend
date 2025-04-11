@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 07. 14:48
+-- Létrehozás ideje: 2025. Ápr 11. 11:06
 -- Kiszolgáló verziója: 10.4.6-MariaDB
 -- PHP verzió: 7.3.8
 
@@ -64,13 +64,24 @@ INSERT INTO `allergens` (`food_id`, `gluten`, `lactose`, `nuts`, `fish`, `egg`, 
 --
 
 CREATE TABLE `cart` (
-  `cart_id` varchar(50) COLLATE utf8_hungarian_ci NOT NULL,
-  `user_id` int(11) NOT NULL,
+  `id` int(11) NOT NULL,
+  `cart_id` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
   `food_id` int(11) NOT NULL,
   `date` date NOT NULL,
-  `count` int(11) NOT NULL,
-  `restaurant_id` int(11) NOT NULL
+  `count` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `cart`
+--
+
+INSERT INTO `cart` (`id`, `cart_id`, `food_id`, `date`, `count`) VALUES
+(7, '#1/2025-04-11T08:31:10.605Z', 1, '2025-04-11', 3),
+(8, '#1/2025-04-11T08:31:10.605Z', 2, '2025-04-11', 2),
+(9, '#1/2025-04-11T08:31:10.605Z', 3, '2025-04-11', 1),
+(10, '#1/2025-04-11T09:02:07.049Z', 1, '2025-04-11', 3),
+(11, '#1/2025-04-11T09:02:07.049Z', 2, '2025-04-11', 2),
+(12, '#1/2025-04-11T09:02:07.049Z', 3, '2025-04-11', 1);
 
 -- --------------------------------------------------------
 
@@ -150,8 +161,18 @@ INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
 
 CREATE TABLE `orders` (
   `order_id` int(11) NOT NULL,
-  `cart_id` int(11) NOT NULL
+  `cart_id` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
+  `restaurant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `orders`
+--
+
+INSERT INTO `orders` (`order_id`, `cart_id`, `restaurant_id`, `user_id`) VALUES
+(4, '#1/2025-04-11T08:31:10.605Z', 1, 1),
+(5, '#1/2025-04-11T09:02:07.049Z', 3, 1);
 
 -- --------------------------------------------------------
 
@@ -193,20 +214,6 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
--- A tábla adatainak kiíratása `users`
---
-
-INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `password`, `profile_picture`, `points`, `role`) VALUES
-(1, 'anyd', 'anyd', 'anyd@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(2, 'anyd2', 'anyd2', 'anyd2@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(3, 'asdf', 'sd', 'anyd3@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(4, 'sdfaa', 'adf', 'anyd4@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(5, 'as', 'gfs', 'anyd5@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(6, 'asdf', 'sdf', 'anyd6@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user'),
-(7, 'Ahh', 'Goofy', 'goofyaah@citrommail.', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', '', 0, 'user'),
-(8, 'ouődasf', 'osdufh', 'anyd7@budos.xd', 'd09ea9061b85ddcb40747fc8933691dae102b6153c07e54a5f110694f7636559', '', 0, 'user');
-
---
 -- Indexek a kiírt táblákhoz
 --
 
@@ -214,7 +221,7 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `password`, 
 -- A tábla indexei `cart`
 --
 ALTER TABLE `cart`
-  ADD PRIMARY KEY (`cart_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- A tábla indexei `chats`
@@ -257,6 +264,12 @@ ALTER TABLE `users`
 --
 
 --
+-- AUTO_INCREMENT a táblához `cart`
+--
+ALTER TABLE `cart`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
 -- AUTO_INCREMENT a táblához `chats`
 --
 ALTER TABLE `chats`
@@ -278,7 +291,7 @@ ALTER TABLE `nutritions`
 -- AUTO_INCREMENT a táblához `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT a táblához `restaurants`
@@ -290,7 +303,7 @@ ALTER TABLE `restaurants`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
