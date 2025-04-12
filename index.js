@@ -27,6 +27,7 @@ const getFoods = async (req, res) => {
     let tables = "foods";
     let filters = "";
     let search = "";
+    console.log(req.user)
     const { minkcal, maxkcal, name } = req.query;
     if (name) {
         search = `name like "${name}%"`;
@@ -50,7 +51,6 @@ const getFoods = async (req, res) => {
     let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search + ";";
     try {
         const [json] = await connection.query(query);
-        //console.log(json);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -76,10 +76,6 @@ const getNutritions = async (req, res) => {
 }
 
 const getChat = async (req, res) => {
-    if (!(req.params.sender_id && req.params.recipient_id)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
-    }
     try {
         const [json] = await connection.execute(`select u1.first_name, u1.last_name, u2.first_name, u2.last_name, message from chats inner join users as u1 on u1.user_id=sender_id inner join users as u2 on u2.user_id=recipient_id where sender_id=? and recipient_id=?`, [req.params.sender_id, req.params.recipient_id]);
         res.status(200).send(json);
@@ -117,8 +113,12 @@ const getOrders = async (req, res) => {
 }
 
 const getOrderHistory = async (req, res) => {
+    if (!(await contains("orders", "user_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
+        return;
+    }
     try {
-        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=?`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=? order by date`, [req.params.id]);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -209,7 +209,6 @@ const addToCart = async (req, res) => {
     }
 }
 
-
 const newRestaurant = async (req, res) => {
     if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name)) {
         res.status(400).send({ error: "Bad Request!" });
@@ -227,8 +226,8 @@ const newRestaurant = async (req, res) => {
 
 
 const del = async (req, res, table, column, value) => {
-    if (!(req.params.id)) {
-        res.status(400).send({ error: "ID not found!" });
+    if (!(await contains(table, column, value))) {
+        res.status(404).send({ error: "Not found!" });
         return;
     }
     try {
@@ -253,11 +252,12 @@ const delFromCart = async (req, res) => {
 }
 
 const clearCart = async (req, res) => {
-    if (!(req.params.user_id)) {
+    if (!(await contains("orders", "user_id", req.params.user_id))) {
         res.status(400).send({ error: "ID not found!" });
         return;
     }
     try {
+        await connection.execute(`delete from orders where user_id=?`, [req.params.user_id]);
         await connection.execute(`delete from cart where user_id=?`, [req.params.user_id]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
@@ -283,7 +283,6 @@ const modFood = async (req, res) => {
 }
 
 const modUser = async (req, res) => {
-    console.log(req.body)
     if (!(req.body.first_name && req.body.last_name && req.body.password && req.body.profile_picture)) {
         res.status(400).send({ error: "Bad Request!" })
         return;
@@ -344,7 +343,7 @@ const modMessage = async (req, res) => {
 }
 
 
-const modImage = async (req, res) => {
+const modFoodImage = async (req, res) => {
     if (!(req.body.image)) {
         res.status(400).send({ error: "Bad Request!" });
         return;
@@ -378,6 +377,61 @@ const modPrice = async (req, res) => {
         res.status(200).send({ status: "OK" });
     } catch (error) {
         //console.log(error);
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const modUserImage = async (req, res) => {
+    if (!req.body.image) {
+        res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    if (!(await contains("users", "user_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
+        return;
+    }
+    try {
+        await connection.execute(`update users set image=? where user_id=?`, [req.body.image, req.params.id]);
+
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
+        //console.log(error);
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const modUserPassword = async (req, res) => {
+    if (!req.body.password) {
+        res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    if (!(await contains("users", "user_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
+        return;
+    }
+    try {
+        await connection.execute(`update users set password=sha2(?, 256) where user_id=?`, [req.body.password, req.params.id]);
+
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
+        //console.log(error);
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const modUserName = async (req, res) => {
+    if (!(req.body.first_name && req.body.last_name)) {
+        res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    if (!(await contains("users", "user_id", req.params.id))){
+        res.status(404).send({ error: "ID not found!" });
+        return;
+    }
+    try {
+        await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
@@ -441,10 +495,13 @@ app.put("/user/:id", modUser);
 app.put("/nutrition/:id", modNutrition);
 
 
-app.patch("/foodimage/:id", modImage);
+app.patch("/foodimage/:id", modFoodImage);
 app.patch("/foodprice/:id", modPrice);
 
 app.patch("/user/points/:id", modPoints);
+app.patch("/user/password/:id", modUserPassword);
+app.patch("/user/image/:id", modUserImage);
+app.patch("/user/name/:id", modUserName);
 app.patch("/message/:id", modMessage);
 
 const port = process.env.API_PORT || 89;
