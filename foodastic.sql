@@ -1,14 +1,13 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 11. 11:06
--- Kiszolgáló verziója: 10.4.6-MariaDB
--- PHP verzió: 7.3.8
+-- Létrehozás ideje: 2025. Ápr 13. 22:20
+-- Kiszolgáló verziója: 10.4.32-MariaDB
+-- PHP verzió: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -65,7 +64,7 @@ INSERT INTO `allergens` (`food_id`, `gluten`, `lactose`, `nuts`, `fish`, `egg`, 
 
 CREATE TABLE `cart` (
   `id` int(11) NOT NULL,
-  `cart_id` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
+  `cart_id` varchar(32) NOT NULL,
   `food_id` int(11) NOT NULL,
   `date` date NOT NULL,
   `count` int(11) NOT NULL
@@ -76,12 +75,8 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`id`, `cart_id`, `food_id`, `date`, `count`) VALUES
-(7, '#1/2025-04-11T08:31:10.605Z', 1, '2025-04-11', 3),
-(8, '#1/2025-04-11T08:31:10.605Z', 2, '2025-04-11', 2),
-(9, '#1/2025-04-11T08:31:10.605Z', 3, '2025-04-11', 1),
-(10, '#1/2025-04-11T09:02:07.049Z', 1, '2025-04-11', 3),
-(11, '#1/2025-04-11T09:02:07.049Z', 2, '2025-04-11', 2),
-(12, '#1/2025-04-11T09:02:07.049Z', 3, '2025-04-11', 1);
+(1, '#1/2025-04-12T16:44:55.610Z', 2, '2025-04-12', 2),
+(2, '#1/2025-04-12T16:44:55.610Z', 1, '2025-04-12', 2);
 
 -- --------------------------------------------------------
 
@@ -93,7 +88,7 @@ CREATE TABLE `chats` (
   `chat_id` int(11) NOT NULL,
   `sender_id` int(11) NOT NULL,
   `recipient_id` int(11) NOT NULL,
-  `message` text COLLATE utf8_hungarian_ci NOT NULL
+  `message` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -104,9 +99,9 @@ CREATE TABLE `chats` (
 
 CREATE TABLE `foods` (
   `food_id` int(11) NOT NULL,
-  `name` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
+  `name` varchar(32) NOT NULL,
   `price` int(11) NOT NULL,
-  `image` tinytext COLLATE utf8_hungarian_ci NOT NULL
+  `image` tinytext NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
@@ -123,7 +118,12 @@ INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
 (7, 'Sushi Platter', 5790, 'https://images.squarespace-cdn.com/content/v1/5021287084ae954efd31e9f4/1607482720127-ODLTGIEZG0DY4PHQ614O/F0671251-453B-44FE-8625-00E6FB2E9222?format=300w'),
 (8, 'Vegetable Stir Fry', 2890, 'https://www.maryswholelife.com/wp-content/uploads/2022/03/Pad_Pak_05-300x300.jpg'),
 (9, 'BBQ Ribs', 5290, 'https://indianakitchen.com/wp-content/uploads/2015/03/st.louis_.jpg'),
-(10, 'Chocolate Lava Cake', 2390, 'https://www.livewellbakeoften.com/wp-content/uploads/2017/01/Molten-Chocolate-Lava-Cakes-for-Two-4-300x300-1.jpg');
+(10, 'Chocolate Lava Cake', 2390, 'https://www.livewellbakeoften.com/wp-content/uploads/2017/01/Molten-Chocolate-Lava-Cakes-for-Two-4-300x300-1.jpg'),
+(12, 'Próba', 0, '-'),
+(13, 'Próba', 500, '-'),
+(14, 'Próba', 500, '-'),
+(15, 'Próba', 500, '-'),
+(16, 'Próba', 500, '-');
 
 -- --------------------------------------------------------
 
@@ -161,7 +161,7 @@ INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
 
 CREATE TABLE `orders` (
   `order_id` int(11) NOT NULL,
-  `cart_id` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
+  `cart_id` varchar(32) NOT NULL,
   `restaurant_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
@@ -171,8 +171,7 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`order_id`, `cart_id`, `restaurant_id`, `user_id`) VALUES
-(4, '#1/2025-04-11T08:31:10.605Z', 1, 1),
-(5, '#1/2025-04-11T09:02:07.049Z', 3, 1);
+(1, '#1/2025-04-12T16:44:55.610Z', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -182,9 +181,9 @@ INSERT INTO `orders` (`order_id`, `cart_id`, `restaurant_id`, `user_id`) VALUES
 
 CREATE TABLE `restaurants` (
   `restaurant_id` int(11) NOT NULL,
-  `restaurant_name` varchar(20) COLLATE utf8_hungarian_ci NOT NULL,
-  `restaurant_picture` text COLLATE utf8_hungarian_ci NOT NULL,
-  `restaurant_address` varchar(32) COLLATE utf8_hungarian_ci NOT NULL
+  `restaurant_name` varchar(20) NOT NULL,
+  `restaurant_picture` text NOT NULL,
+  `restaurant_address` varchar(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
@@ -204,13 +203,13 @@ INSERT INTO `restaurants` (`restaurant_id`, `restaurant_name`, `restaurant_pictu
 
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
-  `first_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `last_name` varchar(16) COLLATE utf8_hungarian_ci NOT NULL,
-  `email` varchar(32) COLLATE utf8_hungarian_ci NOT NULL,
-  `password` varchar(64) COLLATE utf8_hungarian_ci NOT NULL,
-  `profile_picture` varchar(30) COLLATE utf8_hungarian_ci NOT NULL,
+  `first_name` varchar(16) NOT NULL,
+  `last_name` varchar(16) NOT NULL,
+  `email` varchar(32) NOT NULL,
+  `password` varchar(64) NOT NULL,
+  `profile_picture` varchar(30) NOT NULL,
   `points` int(11) NOT NULL DEFAULT 0,
-  `role` varchar(20) COLLATE utf8_hungarian_ci NOT NULL
+  `role` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
@@ -267,7 +266,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT a táblához `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT a táblához `chats`
@@ -279,7 +278,7 @@ ALTER TABLE `chats`
 -- AUTO_INCREMENT a táblához `foods`
 --
 ALTER TABLE `foods`
-  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT a táblához `nutritions`
@@ -291,7 +290,7 @@ ALTER TABLE `nutritions`
 -- AUTO_INCREMENT a táblához `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT a táblához `restaurants`
