@@ -1,4 +1,5 @@
 # Foodastic REST API
+(Work in progress...)
 
 Foodastic is a Node.js backend API for a food ordering system. It handles users, foods, nutrition data, chat messages, restaurants, shopping carts, and orders.
 

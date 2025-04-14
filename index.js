@@ -27,7 +27,6 @@ const getFoods = async (req, res) => {
     let tables = "foods";
     let filters = "";
     let search = "";
-    console.log(req.user)
     const { minkcal, maxkcal, name } = req.query;
     if (name) {
         search = `name like "${name}%"`;
@@ -120,22 +119,30 @@ const getOrderHistory = async (req, res) => {
     try {
         const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=? order by date`, [req.params.id]);
         let arr = [];
+        let resp = []
         for (let j of json) {
-            arr.push({
-                order_id: j.order_id,
-                user_id: j.user_id,
-                cart_id: j.cart_id,
-                date: j.date,
-                restaurant_id: j.restaurant_id,
-                cart: [
-                    {
-                        food_id: j.food_id,
-                        count: j.count
-                    }
-                ]
-            });
+            if (!arr.includes(j.order_id)) arr.push(j.order_id);
         }
-        res.status(200).send(arr);
+        for (let a of arr){
+            let t = [];
+            let o = {};
+            for (let j of json){
+                if (a == j.order_id){
+                o.order_id = a,
+                o.user_id = j.user_id;
+                o.cart_id = j.cart_id;
+                o.date = j.date;
+                o.restaurant_id = j.restaurant_id;
+                t.push({
+                    food_id: j.food_id,
+                    count: j.count
+                });
+                } 
+            }
+            o.cart = t;
+            resp.push(o);
+        }
+        res.status(200).send(resp);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -252,6 +259,25 @@ const del = async (req, res, table, column, value) => {
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
+}
+
+const delUser = async(req, res) => {
+    if (!(await contains("users", "user_id", req.params.id))) {
+        res.status(404).send({ error: "Not found!" });
+        return;
+    }
+    try {
+        await connection.execute(`delete from users where user_id=?`, [req.params.id]);
+        const [json] = await connection.execute(`select cart_id from orders where user_id=?`, [req.params.id]);
+        if (json.length > 0){
+            await connection.execute(`delete from orders where user_id=?`, [req.params.id]);
+            for (let j of json){ await connection.execute(`delete from cart where cart_id=?`, [j.cart_id]);}
+        } 
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+
 }
 
 const delFromCart = async (req, res) => {
@@ -517,7 +543,7 @@ app.post("/login", login);
 //app.post("/allergen", newAllergen);
 
 app.delete("/food/:id", (req, res) => del(req, res, "foods", "food_id", req.params.id));
-app.delete("/user/:id", (req, res) => del(req, res, "users", "user_id", req.params.id));
+app.delete("/user/:id", delUser);
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions", "food_id", req.params.id));
 app.delete("/delfromcart/:user_id/:food_id", delFromCart);
 app.delete("/clearcart/:user_id/", clearCart);
