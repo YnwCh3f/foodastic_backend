@@ -56,6 +56,15 @@ const getFoods = async (req, res) => {
     }
 }
 
+const getFoodById = async (req, res) => {
+    try {
+        const [json] = await connection.execute("select * from foods where food_id=?", [req.params.id]);
+        res.status(200).send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 const getUsers = async (req, res) => {
     try {
         const [json] = await connection.query(`select * from users`);
@@ -112,12 +121,16 @@ const getOrders = async (req, res) => {
 }
 
 const getOrderHistory = async (req, res) => {
-    if (!(await contains("orders", "user_id", req.params.id))) {
+    if (!(await contains("users", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
+    if (!(await contains("orders", "user_id", req.params.id))) {
+        res.status(404).send({ error: "User has no orders!" });
+        return;
+    }
     try {
-        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=? order by date`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) inner join foods using(food_id) where user_id=? order by date`, [req.params.id]);
         let arr = [];
         let resp = []
         for (let j of json) {
@@ -135,6 +148,7 @@ const getOrderHistory = async (req, res) => {
                 o.restaurant_id = j.restaurant_id;
                 t.push({
                     food_id: j.food_id,
+                    name: j.name,
                     count: j.count
                 });
                 } 
@@ -174,6 +188,7 @@ const newUser = async (req, res) => {
     }
     try {
         await connection.execute(`insert into users set first_name=?, last_name=?, email=?, password=sha2(?, 256), role='user'`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password]);
+        const [json] = await connection.execute(`select * from users where email=?`, [req.body.email]);
         res.status(201).send({ status: "Created", first_name: req.body.first_name, last_name: req.body.last_name, email: req.body.email, role: "user", user_id: json[0].user_id });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -524,6 +539,7 @@ const login = async (req, res) => {
 
 app.get("/", (req, res) => res.status(200).send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
+app.get("/food/:id", getFoodById)
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
