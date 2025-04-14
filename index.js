@@ -301,7 +301,7 @@ const delFood = async (req, res) => {
 
 }
 
-const delFromCart = async (req, res) => {
+/*const delFromCart = async (req, res) => {
     if (!(req.params.user_id && req.params.food_id)) {
         return res.status(400).send({ error: "ID not found!" });
     }
@@ -324,7 +324,7 @@ const clearCart = async (req, res) => {
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
-}
+}*/
 
 
 
@@ -439,8 +439,8 @@ const modUserImage = async (req, res) => {
         return res.status(404).send({ error: "ID not found!" });
     }
     try {
-        await connection.execute(`update users set image=? where user_id=?`, [req.body.image, req.params.id]);
-        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        await connection.execute(`update users set profile_picture=? where user_id=?`, [req.body.image, req.params.id]);
+        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
         res.status(200).send(json);
     } catch (error) {
         //console.log(error);
@@ -473,7 +473,7 @@ const modUserName = async (req, res) => {
     }
     try {
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
-        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -482,7 +482,7 @@ const modUserName = async (req, res) => {
 
 
 const modUserEmail = async (req, res) => {
-    if (!(req.body.first_name && req.body.last_name)) {
+    if (!req.body.email) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
@@ -490,7 +490,7 @@ const modUserEmail = async (req, res) => {
     }
     try {
         await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
-        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
         res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -545,8 +545,8 @@ app.post("/login", login);
 app.delete("/food/:id", delFood);
 app.delete("/user/:id", delUser);
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions", "food_id", req.params.id));
-app.delete("/delfromcart/:user_id/:food_id", delFromCart);
-app.delete("/clearcart/:user_id/", clearCart);
+//app.delete("/delfromcart/:user_id/:food_id", delFromCart);
+//app.delete("/clearcart/:user_id/", clearCart);
 app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants", "restaurant_id", req.params.id));
 
 
