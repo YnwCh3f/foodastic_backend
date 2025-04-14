@@ -113,13 +113,29 @@ const getOrders = async (req, res) => {
 }
 
 const getOrderHistory = async (req, res) => {
-    if (!(await contains("orders", "user_id", req.params.id))){
+    if (!(await contains("orders", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
     try {
         const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where user_id=? order by date`, [req.params.id]);
-        res.status(200).send(json);
+        let arr = [];
+        for (let j of json) {
+            arr.push({
+                order_id: j.order_id,
+                user_id: j.user_id,
+                cart_id: j.cart_id,
+                date: j.date,
+                restaurant_id: j.restaurant_id,
+                cart: [
+                    {
+                        food_id: j.food_id,
+                        count: j.count
+                    }
+                ]
+            });
+        }
+        res.status(200).send(arr);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -348,7 +364,7 @@ const modFoodImage = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(await contains("foods", "food_id", req.params.id))){
+    if (!(await contains("foods", "food_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
@@ -367,7 +383,7 @@ const modPrice = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(await contains("foods", "food_id", req.params.id))){
+    if (!(await contains("foods", "food_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
@@ -386,7 +402,7 @@ const modUserImage = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(await contains("users", "user_id", req.params.id))){
+    if (!(await contains("users", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
@@ -405,7 +421,7 @@ const modUserPassword = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(await contains("users", "user_id", req.params.id))){
+    if (!(await contains("users", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
@@ -424,12 +440,30 @@ const modUserName = async (req, res) => {
         res.status(400).send({ error: "Bad Request!" });
         return;
     }
-    if (!(await contains("users", "user_id", req.params.id))){
+    if (!(await contains("users", "user_id", req.params.id))) {
         res.status(404).send({ error: "ID not found!" });
         return;
     }
     try {
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+
+const modUserEmail = async (req, res) => {
+    if (!(req.body.first_name && req.body.last_name)) {
+        res.status(400).send({ error: "Bad Request!" });
+        return;
+    }
+    if (!(await contains("users", "user_id", req.params.id))) {
+        res.status(404).send({ error: "ID not found!" });
+        return;
+    }
+    try {
+        await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -502,6 +536,7 @@ app.patch("/user/points/:id", modPoints);
 app.patch("/user/password/:id", modUserPassword);
 app.patch("/user/image/:id", modUserImage);
 app.patch("/user/name/:id", modUserName);
+app.patch("/user/email/:id", modUserEmail);
 app.patch("/message/:id", modMessage);
 
 const port = process.env.API_PORT || 89;
