@@ -122,12 +122,10 @@ const getOrders = async (req, res) => {
 
 const getOrderHistory = async (req, res) => {
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     if (!(await contains("orders", "user_id", req.params.id))) {
-        res.status(404).send({ error: "User has no orders!" });
-        return;
+        return res.status(404).send({ error: "User has no orders!" });
     }
     try {
         const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) inner join foods using(food_id) where user_id=? order by date`, [req.params.id]);
@@ -136,22 +134,22 @@ const getOrderHistory = async (req, res) => {
         for (let j of json) {
             if (!arr.includes(j.order_id)) arr.push(j.order_id);
         }
-        for (let a of arr){
+        for (let a of arr) {
             let t = [];
             let o = {};
-            for (let j of json){
-                if (a == j.order_id){
-                o.order_id = a,
-                o.user_id = j.user_id;
-                o.cart_id = j.cart_id;
-                o.date = j.date;
-                o.restaurant_id = j.restaurant_id;
-                t.push({
-                    food_id: j.food_id,
-                    name: j.name,
-                    count: j.count
-                });
-                } 
+            for (let j of json) {
+                if (a == j.order_id) {
+                    o.order_id = a,
+                        o.user_id = j.user_id;
+                    o.cart_id = j.cart_id;
+                    o.date = j.date;
+                    o.restaurant_id = j.restaurant_id;
+                    t.push({
+                        food_id: j.food_id,
+                        name: j.name,
+                        count: j.count
+                    });
+                }
             }
             o.cart = t;
             resp.push(o);
@@ -166,8 +164,7 @@ const getOrderHistory = async (req, res) => {
 
 const newFood = async (req, res) => {
     if (!(req.body.name && req.body.price && req.body.image)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         await connection.execute(`insert into foods set name=?, price=?, image=?`, [req.body.name, req.body.price, req.body.image]);
@@ -179,12 +176,10 @@ const newFood = async (req, res) => {
 
 const newUser = async (req, res) => {
     if (!(req.body.first_name && req.body.last_name && req.body.email && req.body.password)) {
-        res.status(400).send({ error: "Bad Request!" })
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (await contains("users", "email", req.body.email)) {
-        res.status(409).send({ error: "Email address already in use!" });
-        return;
+        return res.status(409).send({ error: "Email address already in use!" });
     }
     try {
         await connection.execute(`insert into users set first_name=?, last_name=?, email=?, password=sha2(?, 256), role='user'`, [req.body.first_name, req.body.last_name, req.body.email, req.body.password]);
@@ -197,12 +192,10 @@ const newUser = async (req, res) => {
 
 const newNutrition = async (req, res) => {
     if (!(req.body.food_id && req.body.kcal)) {
-        res.status(400).send({ error: "Bad Request!" })
-        return;
+        return res.status(400).send({ error: "Bad Request!" })
     }
     if (contains("nutritions", "food_id", req.body.food_id)) {
-        res.status(409).send({ error: "Already in use!" })
-        return;
+        return res.status(409).send({ error: "Already in use!" })
     }
     try {
         await connection.execute(`insert into nutritions set food_id=?, kcal=?`, [req.body.food_id, req.body.kcal]);
@@ -214,27 +207,26 @@ const newNutrition = async (req, res) => {
 
 const newMessage = async (req, res) => {
     if (!req.body.message) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     try {
-        const [json] = await connection.execute(`insert into chats set sender_id=?, recipient_id=?, message=?`, [req.params.sender_id, req.params.recipient_id, req.body.message]);
+        await connection.execute(`insert into chats set sender_id=?, recipient_id=?, message=?`, [req.params.sender_id, req.params.recipient_id, req.body.message]);
         res.status(201).send({ status: "Created" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
 
-const addToCart = async (req, res) => {
+const newOrder = async (req, res) => {
     if (!(req.body.user_id && req.body.cart && req.body.restaurant_id)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
+    console.log(req.body+"\n")
     try {
         let date = new Date().toJSON();
         let cart_id = "#" + req.body.user_id + "/" + date;
-        console.log(cart_id);
-        console.log(req.body.cart.length);
+        //console.log(cart_id);
+        //console.log(req.body.cart.length);
         for (let i = 0; i < req.body.cart.length; i++) {
             await connection.execute(`insert into cart set cart_id=?, food_id=?, date="${date}", count=?`, [cart_id, req.body.cart[i].food_id, req.body.cart[i].size]);
         }
@@ -249,8 +241,7 @@ const addToCart = async (req, res) => {
 
 const newRestaurant = async (req, res) => {
     if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         const [json] = await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
@@ -265,8 +256,7 @@ const newRestaurant = async (req, res) => {
 
 const del = async (req, res, table, column, value) => {
     if (!(await contains(table, column, value))) {
-        res.status(404).send({ error: "Not found!" });
-        return;
+        return res.status(404).send({ error: "Not found!" });
     }
     try {
         await connection.execute(`delete from ${table} where ${column}=?`, [value]);
@@ -276,18 +266,34 @@ const del = async (req, res, table, column, value) => {
     }
 }
 
-const delUser = async(req, res) => {
+const delUser = async (req, res) => {
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "Not found!" });
-        return;
+        return res.status(404).send({ error: "Not found!" });
     }
     try {
         await connection.execute(`delete from users where user_id=?`, [req.params.id]);
         const [json] = await connection.execute(`select cart_id from orders where user_id=?`, [req.params.id]);
-        if (json.length > 0){
+        if (json.length > 0) {
             await connection.execute(`delete from orders where user_id=?`, [req.params.id]);
-            for (let j of json){ await connection.execute(`delete from cart where cart_id=?`, [j.cart_id]);}
-        } 
+            for (let j of json) { await connection.execute(`delete from cart where cart_id=?`, [j.cart_id]); }
+        }
+        res.status(200).send({ status: "OK" });
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+
+}
+
+const delFood = async (req, res) => {
+    if (!(await contains("foods", "food_id", req.params.id))) {
+        return res.status(404).send({ error: "Not found!" });
+    }
+    if (await contains("cart", "food_id", req.params.id) || await contains("nutritions", "food_id", req.params.id)) {
+        return res.status(400).send({ error: "Cannot be deleted!(item exists in another table)" });
+    }
+    try {
+        await connection.execute(`delete from foods where food_id=?`, [req.params.id]);
+
         res.status(200).send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -297,8 +303,7 @@ const delUser = async(req, res) => {
 
 const delFromCart = async (req, res) => {
     if (!(req.params.user_id && req.params.food_id)) {
-        res.status(400).send({ error: "ID not found!" });
-        return;
+        return res.status(400).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`delete from cart where user_id=? and food_id=?`, [req.params.user_id, req.params.food_id]);
@@ -310,8 +315,7 @@ const delFromCart = async (req, res) => {
 
 const clearCart = async (req, res) => {
     if (!(await contains("orders", "user_id", req.params.user_id))) {
-        res.status(400).send({ error: "ID not found!" });
-        return;
+        return res.status(400).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`delete from orders where user_id=?`, [req.params.user_id]);
@@ -327,8 +331,7 @@ const clearCart = async (req, res) => {
 
 const modFood = async (req, res) => {
     if (!(req.body.name && req.body.price && req.body.image)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         await connection.execute(`update foods set name=?, price=?, image=? where food_id=?`, [req.body.name, req.body.price, req.body.image, req.params.id]);
@@ -341,8 +344,7 @@ const modFood = async (req, res) => {
 
 const modUser = async (req, res) => {
     if (!(req.body.first_name && req.body.last_name && req.body.password && req.body.profile_picture)) {
-        res.status(400).send({ error: "Bad Request!" })
-        return;
+        return res.status(400).send({ error: "Bad Request!" })
     }
     try {
         await connection.query(`update users set first_name=?, last_name=?, password=?, profile_picture=? where user_id=?`, [req.body.first_name, req.body.last_name, req.body.password, req.body.profile_picture, req.params.id]);
@@ -354,12 +356,10 @@ const modUser = async (req, res) => {
 
 const modNutrition = async (req, res) => {
     if (!req.body.kcal) {
-        res.status(400).send({ error: "Bad request!" });
-        return;
+        return res.status(400).send({ error: "Bad request!" });
     }
     if (!contains("nutritions", "food_id", req.params.id)) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.query(`update nutritions set kcal=? where food_id=? `, [req.body.kcal, req.params.id]);
@@ -371,12 +371,10 @@ const modNutrition = async (req, res) => {
 
 const modPoints = async (req, res) => {
     if (!req.body.points) {
-        res.status(400).send({ error: "Bad request!" });
-        return;
+        return res.status(400).send({ error: "Bad request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.query(`update users set points=? where user_id=? `, [req.body.points, req.params.id]);
@@ -388,8 +386,7 @@ const modPoints = async (req, res) => {
 
 const modMessage = async (req, res) => {
     if (!(req.body.message)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         const [json] = await connection.execute(`update chats set message=? where chat_id=?`, [req.body.message, req.params.id]);
@@ -402,12 +399,10 @@ const modMessage = async (req, res) => {
 
 const modFoodImage = async (req, res) => {
     if (!(req.body.image)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("foods", "food_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update foods set image=? where food_id=?`, [req.body.image, req.params.id]);
@@ -421,12 +416,10 @@ const modFoodImage = async (req, res) => {
 
 const modPrice = async (req, res) => {
     if (!req.body.price) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("foods", "food_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update foods set price=? where food_id=?`, [req.body.price, req.params.id]);
@@ -440,17 +433,15 @@ const modPrice = async (req, res) => {
 
 const modUserImage = async (req, res) => {
     if (!req.body.image) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update users set image=? where user_id=?`, [req.body.image, req.params.id]);
-
-        res.status(200).send({ status: "OK" });
+        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        res.status(200).send(json);
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -459,16 +450,13 @@ const modUserImage = async (req, res) => {
 
 const modUserPassword = async (req, res) => {
     if (!req.body.password) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update users set password=sha2(?, 256) where user_id=?`, [req.body.password, req.params.id]);
-
         res.status(200).send({ status: "OK" });
     } catch (error) {
         //console.log(error);
@@ -478,16 +466,15 @@ const modUserPassword = async (req, res) => {
 
 const modUserName = async (req, res) => {
     if (!(req.body.first_name && req.body.last_name)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -496,16 +483,15 @@ const modUserName = async (req, res) => {
 
 const modUserEmail = async (req, res) => {
     if (!(req.body.first_name && req.body.last_name)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
-        res.status(404).send({ error: "ID not found!" });
-        return;
+        return res.status(404).send({ error: "ID not found!" });
     }
     try {
         await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        const [json] = await connection.execute(`select * users where user_id=?`, [req.params.id]);
+        res.status(200).send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -520,12 +506,10 @@ const contains = async (table, column, value) => {
 
 const login = async (req, res) => {
     if (!(req.body.email && req.body.password)) {
-        res.status(400).send({ error: "Bad Request!" });
-        return;
+        return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "email", req.body.email))) {
-        res.status(404).send({ error: "User not found!" });
-        return;
+        return res.status(404).send({ error: "User not found!" });
     }
     try {
         const [json] = await connection.execute("select * from users where email=? and password=sha2(?, 256)", [req.body.email, req.body.password]);
@@ -553,12 +537,12 @@ app.post("/food", newFood);
 app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
 app.post("/message/:sender_id/:recipient_id", newMessage);
-app.post("/addtocart", addToCart);
+app.post("/order", newOrder);
 app.post("/restaurant", newRestaurant);
 app.post("/login", login);
 //app.post("/allergen", newAllergen);
 
-app.delete("/food/:id", (req, res) => del(req, res, "foods", "food_id", req.params.id));
+app.delete("/food/:id", delFood);
 app.delete("/user/:id", delUser);
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions", "food_id", req.params.id));
 app.delete("/delfromcart/:user_id/:food_id", delFromCart);
