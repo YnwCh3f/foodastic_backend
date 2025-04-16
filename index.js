@@ -50,7 +50,7 @@ const getFoods = async (req, res) => {
     let query = `select * from ${tables}` + ((filters.length > 0 || search.length > 0) ? " where " : "") + filters + (filters.length > 0 && search != "" ? " and " : "") + search + ";";
     try {
         const [json] = await connection.query(query);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -59,7 +59,7 @@ const getFoods = async (req, res) => {
 const getFoodById = async (req, res) => {
     try {
         const [json] = await connection.execute("select * from foods where food_id=?", [req.params.id]);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -68,7 +68,7 @@ const getFoodById = async (req, res) => {
 const getUsers = async (req, res) => {
     try {
         const [json] = await connection.query(`select * from users`);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -77,7 +77,7 @@ const getUsers = async (req, res) => {
 const getNutritions = async (req, res) => {
     try {
         const [json] = await connection.query(`select * from nutritions`);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -86,7 +86,7 @@ const getNutritions = async (req, res) => {
 const getChat = async (req, res) => {
     try {
         const [json] = await connection.execute(`select u1.first_name, u1.last_name, u2.first_name, u2.last_name, message from chats inner join users as u1 on u1.user_id=sender_id inner join users as u2 on u2.user_id=recipient_id where sender_id=? and recipient_id=?`, [req.params.sender_id, req.params.recipient_id]);
-        res.status(200).send(json);
+        res.send(json);
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -105,7 +105,7 @@ const getCart = async (req, res) => {
 const getRestaurants = async (req, res) => {
     try {
         const [json] = await connection.query(`select * from restaurants`);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -114,7 +114,7 @@ const getRestaurants = async (req, res) => {
 const getOrders = async (req, res) => {
     try {
         const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=?`, [req.params.id]);
-        res.status(200).send(json);
+        res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -154,7 +154,7 @@ const getOrderHistory = async (req, res) => {
             o.cart = t;
             resp.push(o);
         }
-        res.status(200).send(resp);
+        res.send(resp);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -260,7 +260,7 @@ const del = async (req, res, table, column, value) => {
     }
     try {
         await connection.execute(`delete from ${table} where ${column}=?`, [value]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -277,7 +277,7 @@ const delUser = async (req, res) => {
             await connection.execute(`delete from orders where user_id=?`, [req.params.id]);
             for (let j of json) { await connection.execute(`delete from cart where cart_id=?`, [j.cart_id]); }
         }
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -294,7 +294,7 @@ const delFood = async (req, res) => {
     try {
         await connection.execute(`delete from foods where food_id=?`, [req.params.id]);
 
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -307,7 +307,7 @@ const delFood = async (req, res) => {
     }
     try {
         await connection.execute(`delete from cart where user_id=? and food_id=?`, [req.params.user_id, req.params.food_id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -320,7 +320,7 @@ const clearCart = async (req, res) => {
     try {
         await connection.execute(`delete from orders where user_id=?`, [req.params.user_id]);
         await connection.execute(`delete from cart where user_id=?`, [req.params.user_id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -335,7 +335,7 @@ const modFood = async (req, res) => {
     }
     try {
         await connection.execute(`update foods set name=?, price=?, image=? where food_id=?`, [req.body.name, req.body.price, req.body.image, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -348,7 +348,7 @@ const modUser = async (req, res) => {
     }
     try {
         await connection.query(`update users set first_name=?, last_name=?, password=?, profile_picture=? where user_id=?`, [req.body.first_name, req.body.last_name, req.body.password, req.body.profile_picture, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -363,7 +363,7 @@ const modNutrition = async (req, res) => {
     }
     try {
         await connection.query(`update nutritions set kcal=? where food_id=? `, [req.body.kcal, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -378,7 +378,7 @@ const modPoints = async (req, res) => {
     }
     try {
         await connection.query(`update users set points=? where user_id=? `, [req.body.points, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -390,7 +390,7 @@ const modMessage = async (req, res) => {
     }
     try {
         const [json] = await connection.execute(`update chats set message=? where chat_id=?`, [req.body.message, req.params.id]);
-        res.status(200).send({ staus: "OK" });
+        res.send({ staus: "OK" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -407,7 +407,7 @@ const modFoodImage = async (req, res) => {
     try {
         await connection.execute(`update foods set image=? where food_id=?`, [req.body.image, req.params.id]);
 
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -424,7 +424,7 @@ const modPrice = async (req, res) => {
     try {
         await connection.execute(`update foods set price=? where food_id=?`, [req.body.price, req.params.id]);
 
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -440,8 +440,8 @@ const modUserImage = async (req, res) => {
     }
     try {
         await connection.execute(`update users set profile_picture=? where user_id=?`, [req.body.image, req.params.id]);
-        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
-        res.status(200).send(json);
+        //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
+        res.send({status: "OK"});
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -449,15 +449,18 @@ const modUserImage = async (req, res) => {
 }
 
 const modUserPassword = async (req, res) => {
-    if (!req.body.password) {
+    if (!(req.body.password && req.body.passwordOld)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
         return res.status(404).send({ error: "ID not found!" });
     }
     try {
+        const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.passwordOld]);
+        if (json.length == 0) return res.status(400).send({ error: "Invalid password!" });
+        if (json[0].user_id != req.params.id) return res.status(400).send({ error: "Invalid password!" });
         await connection.execute(`update users set password=sha2(?, 256) where user_id=?`, [req.body.password, req.params.id]);
-        res.status(200).send({ status: "OK" });
+        res.send({ status: "OK" });
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -465,16 +468,20 @@ const modUserPassword = async (req, res) => {
 }
 
 const modUserName = async (req, res) => {
-    if (!(req.body.first_name && req.body.last_name)) {
+    if (!(req.body.first_name && req.body.last_name && req.body.password)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     if (!(await contains("users", "user_id", req.params.id))) {
         return res.status(404).send({ error: "ID not found!" });
     }
     try {
+        const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.password]);
+        if (json.length == 0) return res.status(400).send({ error: "Invalid password!" });
+        if (json[0].user_id != req.params.id) return res.status(400).send({ error: "Invalid password!" });
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
-        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
-        res.status(200).send(json);
+        //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
+        //console.log(json);
+        res.send({status: "OK"});
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -489,9 +496,12 @@ const modUserEmail = async (req, res) => {
         return res.status(404).send({ error: "ID not found!" });
     }
     try {
+        const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.password]);
+        if (json.length == 0) return res.status(400).send({ error: "Invalid password!" });
+        if (json[0].user_id != req.params.id) return res.status(400).send({ error: "Invalid password!" });
         await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
-        const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
-        res.status(200).send(json);
+        //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
+        res.send({status: "OK"});
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -500,7 +510,6 @@ const modUserEmail = async (req, res) => {
 
 const contains = async (table, column, value) => {
     const [json] = await connection.execute(`select * from ${table} where ${column}=?`, [value]);
-    //console.log(json)
     return json.length != 0;
 }
 
@@ -513,15 +522,15 @@ const login = async (req, res) => {
     }
     try {
         const [json] = await connection.execute("select * from users where email=? and password=sha2(?, 256)", [req.body.email, req.body.password]);
-        if (json.length > 0) res.status(200).send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role, user_id: json[0].user_id });
-        else res.status(401).send({ error: "Wrong password!" })
+        if (json.length > 0) res.send({ status: "OK", first_name: json[0].first_name, last_name: json[0].last_name, email: json[0].email, role: json[0].role, user_id: json[0].user_id, profile_picture: json[0].profile_picture });
+        else res.status(401).send({ error: "Wrong password!" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" })
     }
 }
 
 
-app.get("/", (req, res) => res.status(200).send("<h1>Foodastic v1.0.0</h1>"));
+app.get("/", (req, res) => res.send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
 app.get("/food/:id", getFoodById)
 app.get("/users", getUsers);
