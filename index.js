@@ -115,7 +115,7 @@ const getCartByCartId = async (req, res) => {
     try {
         const [json] = await connection.execute("select * from cart where cart_id=?", [req.params.id])
         if (json.length > 0) res.send(json);
-        else res.status(404).send({ error: "User not found!" })
+        else res.status(404).send({ error: "Cart not found!" })
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -270,7 +270,7 @@ const newOrder = async (req, res) => {
     console.log(req.body + "\n")
     try {
         let date = new Date().toJSON();
-        let cart_id = "#" + req.body.user_id + "/" + date;
+        let cart_id = req.body.user_id + "" + date;
         //console.log(cart_id);
         //console.log(req.body.cart.length);
         for (let i = 0; i < req.body.cart.length; i++) {
