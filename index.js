@@ -111,6 +111,17 @@ const getCart = async (req, res) => {
     }
 }
 
+const getCartByCartId = async (req, res) => {
+    try {
+        const [json] = await connection.execute("select * from cart where cart_id=?", [req.params.id])
+        if (json.length > 0) res.send(json);
+        else res.status(404).send({ error: "User not found!" })
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+
 const getRestaurants = async (req, res) => {
     try {
         const [json] = await connection.query(`select * from restaurants`);
@@ -592,6 +603,7 @@ app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
 app.get("/cart/:id", getCart);
+app.get("/cartbycartid/:id", getCartByCartId);
 app.get("/restaurants", getRestaurants);
 app.get("/orders/:id", getOrders);
 app.get("/orders/confirmed/:id", getConfirmedOrders);
