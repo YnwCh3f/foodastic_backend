@@ -534,9 +534,13 @@ const modUserName = async (req, res) => {
     }
 }
 
-/*const setConfirmedOrder = async (req, res) => {
-    if (!req.body.order_id)
-}*/
+const confirmOrder = async (req, res) => {
+    try {
+        await connection.execute("update orders set confirmed=true where order_id=?", [req.params.id]);
+    } catch(err) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
 
 const modUserEmail = async (req, res) => {
     if (!req.body.email) {
@@ -627,6 +631,7 @@ app.patch("/user/image/:id", modUserImage);
 app.patch("/user/name/:id", modUserName);
 app.patch("/user/email/:id", modUserEmail);
 app.patch("/message/:id", modMessage);
+app.patch("/order/confirm", confirmOrder);
 
 const port = process.env.API_PORT || 89;
 
