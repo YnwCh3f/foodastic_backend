@@ -65,9 +65,18 @@ const getFoodById = async (req, res) => {
     }
 }
 
+const getRestaurantById = async (req, res) => {
+    try {
+        const [json] = await connection.execute("select * from restaurants where restaurant_id=?", [req.params.id]);
+        res.send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 const getUsers = async (req, res) => {
     try {
-        const [json] = await connection.query(`select * from users`);
+        const [json] = await connection.query(`select user_id, first_name, last_name, email, profile_picture, points, role from users`);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -120,6 +129,24 @@ const getOrders = async (req, res) => {
     }
 }
 
+const getConfirmedOrders = async (req, res) => {
+    try {
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=? and confirmed=true`, [req.params.id]);
+        res.send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const getUnconfirmedOrders = async (req, res) => {
+    try {
+        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=? and confirmed=false`, [req.params.id]);
+        res.send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 const getOrderHistory = async (req, res) => {
     if (!(await contains("users", "user_id", req.params.id))) {
         return res.status(404).send({ error: "ID not found!" });
@@ -139,8 +166,8 @@ const getOrderHistory = async (req, res) => {
             let o = {};
             for (let j of json) {
                 if (a == j.order_id) {
-                    o.order_id = a,
-                        o.user_id = j.user_id;
+                    o.order_id = a;
+                    o.user_id = j.user_id;
                     o.cart_id = j.cart_id;
                     o.date = j.date;
                     o.restaurant_id = j.restaurant_id;
@@ -163,11 +190,20 @@ const getOrderHistory = async (req, res) => {
 
 
 const newFood = async (req, res) => {
-    if (!(req.body.name && req.body.price && req.body.image)) {
+    if (!(req.body.name && req.body.price && req.body.image, req.body.allergens)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
+    let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
+    let allergens = [];
+    let arr = JSON.parse(req.body.allergens);
+    for (let a of arr) {
+        allergens.push(allergenNames[arr.indexOf(a)] + JSON.stringify(a).includes("false") ? "=false" : "=true");
+    }
     try {
-        await connection.execute(`insert into foods set name=?, price=?, image=?`, [req.body.name, req.body.price, req.body.image]);
+        await connection.execute(`insert into foods set name=?, price=?, image=?;`, [req.body.name, req.body.price, req.body.image]);
+        const [json] = await connection.execute("select food_id from foods order by food_id desc limit 1;");
+        await connection.execute(`insert into allergens set food_id=${json[0].food_id}, ${allergens.map(x => x).join(", ")};`);
+        
         res.status(201).send({ status: "Created" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -221,7 +257,7 @@ const newOrder = async (req, res) => {
     if (!(req.body.user_id && req.body.cart && req.body.restaurant_id)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
-    console.log(req.body+"\n")
+    console.log(req.body + "\n")
     try {
         let date = new Date().toJSON();
         let cart_id = "#" + req.body.user_id + "/" + date;
@@ -230,7 +266,7 @@ const newOrder = async (req, res) => {
         for (let i = 0; i < req.body.cart.length; i++) {
             await connection.execute(`insert into cart set cart_id=?, food_id=?, date="${date}", count=?`, [cart_id, req.body.cart[i].food_id, req.body.cart[i].size]);
         }
-        await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?`, [cart_id, req.body.restaurant_id, req.body.user_id]);
+        await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?, confirmed=false`, [cart_id, req.body.restaurant_id, req.body.user_id]);
         const [json] = await connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
         res.status(201).send({ status: "Created", order_id: json.order_id });
     } catch (error) {
@@ -396,6 +432,18 @@ const modMessage = async (req, res) => {
     }
 }
 
+const modRestaurant = async (req, res) => {
+    if (!(req.body.restaurant_name && req.body.restaurant_address && req.body.restaurant_picture)) {
+        return res.status(400).send({ error: "Bad Request!" });
+    }
+    try {
+        await connection.execute(`update restaurants set restaurant_name=?, restaurant_picture=?, restaurant_address=? where restaurant_id=?`, [req.body.restaurant_name, req.body.restaurant_picture, req.body.restaurant_address, req.params.id]);
+        res.send({ status: "OK" });
+    } catch (error) {
+        //console.log(error);
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
 
 const modFoodImage = async (req, res) => {
     if (!(req.body.image)) {
@@ -441,7 +489,7 @@ const modUserImage = async (req, res) => {
     try {
         await connection.execute(`update users set profile_picture=? where user_id=?`, [req.body.image, req.params.id]);
         //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
-        res.send({status: "OK"});
+        res.send({ status: "OK" });
     } catch (error) {
         //console.log(error);
         res.status(500).send({ error: "Internal Server Error!" });
@@ -481,7 +529,7 @@ const modUserName = async (req, res) => {
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
         //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
         //console.log(json);
-        res.send({status: "OK"});
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -501,7 +549,7 @@ const modUserEmail = async (req, res) => {
         if (json[0].user_id != req.params.id) return res.status(401).send({ error: "Invalid password!" });
         await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
         //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
-        res.send({status: "OK"});
+        res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -532,13 +580,16 @@ const login = async (req, res) => {
 
 app.get("/", (req, res) => res.send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
-app.get("/food/:id", getFoodById)
+app.get("/food/:id", getFoodById);
+app.get("/restaurant/:id", getRestaurantById);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
 app.get("/cart/:id", getCart);
 app.get("/restaurants", getRestaurants);
 app.get("/orders/:id", getOrders);
+app.get("/orders/confirmed/:id", getConfirmedOrders);
+app.get("/orders/unconfirmed/:id", getUnconfirmedOrders);
 app.get("/orderhistory/:id", getOrderHistory);
 
 
@@ -562,6 +613,7 @@ app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants", "restau
 app.put("/food/:id", modFood);
 app.put("/user/:id", modUser);
 app.put("/nutrition/:id", modNutrition);
+app.put("/restaurant/:id", modRestaurant);
 
 
 app.patch("/foodimage/:id", modFoodImage);
