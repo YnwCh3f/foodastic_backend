@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 13. 22:20
+-- Létrehozás ideje: 2025. Ápr 27. 23:06
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -75,8 +75,22 @@ CREATE TABLE `cart` (
 --
 
 INSERT INTO `cart` (`id`, `cart_id`, `food_id`, `date`, `count`) VALUES
-(1, '#1/2025-04-12T16:44:55.610Z', 2, '2025-04-12', 2),
-(2, '#1/2025-04-12T16:44:55.610Z', 1, '2025-04-12', 2);
+(4, '#4/2025-04-14T13:23:34.606Z', 1, '2025-04-14', 1),
+(5, '#4/2025-04-14T13:26:16.143Z', 1, '2025-04-14', 1),
+(6, '#4/2025-04-14T13:26:16.143Z', 2, '2025-04-14', 4),
+(7, '#4/2025-04-14T13:26:16.143Z', 3, '2025-04-14', 5),
+(8, '#8/2025-04-14T14:01:15.030Z', 1, '2025-04-14', 1),
+(9, '#4/2025-04-14T14:41:08.747Z', 2, '2025-04-14', 3),
+(10, '#4/2025-04-14T17:52:28.014Z', 1, '2025-04-14', 1),
+(11, '#4/2025-04-14T17:52:28.014Z', 4, '2025-04-14', 2),
+(12, '#4/2025-04-14T18:55:13.610Z', 1, '2025-04-14', 1),
+(13, '#4/2025-04-14T18:55:13.610Z', 2, '2025-04-14', 1),
+(14, '#1/2025-04-14T19:10:12.623Z', 1, '2025-04-14', 1),
+(15, '#4/2025-04-14T19:11:51.754Z', 1, '2025-04-14', 1),
+(16, '#4/2025-04-14T19:17:16.278Z', 1, '2025-04-14', 1),
+(17, '#4/2025-04-14T20:26:44.838Z', 1, '2025-04-14', 1),
+(18, '#4/2025-04-14T20:51:44.498Z', 1, '2025-04-14', 1),
+(19, '#4/2025-04-15T08:31:22.888Z', 1, '2025-04-15', 1);
 
 -- --------------------------------------------------------
 
@@ -119,11 +133,13 @@ INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
 (8, 'Vegetable Stir Fry', 2890, 'https://www.maryswholelife.com/wp-content/uploads/2022/03/Pad_Pak_05-300x300.jpg'),
 (9, 'BBQ Ribs', 5290, 'https://indianakitchen.com/wp-content/uploads/2015/03/st.louis_.jpg'),
 (10, 'Chocolate Lava Cake', 2390, 'https://www.livewellbakeoften.com/wp-content/uploads/2017/01/Molten-Chocolate-Lava-Cakes-for-Two-4-300x300-1.jpg'),
-(12, 'Próba', 0, '-'),
-(13, 'Próba', 500, '-'),
 (14, 'Próba', 500, '-'),
 (15, 'Próba', 500, '-'),
-(16, 'Próba', 500, '-');
+(16, 'Próba', 500, '-'),
+(17, 'Próba', 500, '-'),
+(18, 'Próba', 500, '-'),
+(19, 'Próba', 500, '-'),
+(20, 'Próba', 500, '-');
 
 -- --------------------------------------------------------
 
@@ -163,15 +179,28 @@ CREATE TABLE `orders` (
   `order_id` int(11) NOT NULL,
   `cart_id` varchar(32) NOT NULL,
   `restaurant_id` int(11) NOT NULL,
-  `user_id` int(11) NOT NULL
+  `user_id` int(11) NOT NULL,
+  `confirmed` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
 
 --
 -- A tábla adatainak kiíratása `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `cart_id`, `restaurant_id`, `user_id`) VALUES
-(1, '#1/2025-04-12T16:44:55.610Z', 1, 1);
+INSERT INTO `orders` (`order_id`, `cart_id`, `restaurant_id`, `user_id`, `confirmed`) VALUES
+(6, '#4/2025-04-14T13:23:34.606Z', 1, 4, 0),
+(7, '#4/2025-04-14T13:26:16.143Z', 2, 4, 0),
+(8, '#8/2025-04-14T14:01:15.030Z', 3, 8, 0),
+(9, '#4/2025-04-14T14:41:08.747Z', 1, 4, 0),
+(10, '#4/2025-04-14T17:52:28.014Z', 2, 4, 0),
+(11, '#4/2025-04-14T18:55:13.610Z', 1, 4, 0),
+(12, '#1/2025-04-14T19:08:35.459Z', 1, 1, 0),
+(13, '#1/2025-04-14T19:10:12.623Z', 1, 1, 0),
+(14, '#4/2025-04-14T19:11:51.754Z', 1, 4, 0),
+(15, '#4/2025-04-14T19:17:16.278Z', 1, 4, 0),
+(16, '#4/2025-04-14T20:26:44.838Z', 1, 4, 0),
+(17, '#4/2025-04-14T20:51:44.498Z', 1, 4, 0),
+(18, '#4/2025-04-15T08:31:22.888Z', 1, 4, 0);
 
 -- --------------------------------------------------------
 
@@ -211,6 +240,15 @@ CREATE TABLE `users` (
   `points` int(11) NOT NULL DEFAULT 0,
   `role` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_hungarian_ci;
+
+--
+-- A tábla adatainak kiíratása `users`
+--
+
+INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `password`, `profile_picture`, `points`, `role`) VALUES
+(4, 'asd', 'asd', 'asd', '688787d8ff144c502c7f5cffaafe2cc588d86079f9de88304c26b0cb99ce91c6', '-', 0, 'user'),
+(8, 'as', 'as', 'as', 'f4bf9f7fcbedaba0392f108c59d8f4a38b3838efb64877380171b54475c2ade8', '', 0, 'user'),
+(9, 'er', 'er', 'fgh', '18ac3e7343f016890c510e93f935261169d9e3f565436429830faf0934f4f8e4', '', 0, 'user');
 
 --
 -- Indexek a kiírt táblákhoz
@@ -266,7 +304,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT a táblához `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT a táblához `chats`
@@ -278,7 +316,7 @@ ALTER TABLE `chats`
 -- AUTO_INCREMENT a táblához `foods`
 --
 ALTER TABLE `foods`
-  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT a táblához `nutritions`
@@ -290,7 +328,7 @@ ALTER TABLE `nutritions`
 -- AUTO_INCREMENT a táblához `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT a táblához `restaurants`
@@ -302,7 +340,7 @@ ALTER TABLE `restaurants`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

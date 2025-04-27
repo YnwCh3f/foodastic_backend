@@ -534,6 +534,9 @@ const modUserName = async (req, res) => {
     }
 }
 
+/*const setConfirmedOrder = async (req, res) => {
+    if (!req.body.order_id)
+}*/
 
 const modUserEmail = async (req, res) => {
     if (!req.body.email) {
