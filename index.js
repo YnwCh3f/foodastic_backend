@@ -190,12 +190,12 @@ const getOrderHistory = async (req, res) => {
 
 
 const newFood = async (req, res) => {
-    if (!(req.body.name && req.body.price && req.body.image, req.body.allergens)) {
+    if (!(req.body.name && req.body.price && req.body.image && req.body.allergens)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
     let allergens = [];
-    let arr = JSON.parse(req.body.allergens);
+    let arr = req.body.allergens;
     for (let a of arr) {
         allergens.push(allergenNames[arr.indexOf(a)] + JSON.stringify(a).includes("false") ? "=false" : "=true");
     }
