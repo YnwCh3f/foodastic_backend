@@ -196,13 +196,13 @@ const newFood = async (req, res) => {
     let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
     let allergens = [];
     let arr = JSON.parse(req.body.allergens);
-    for (let a of arr) {
-        allergens.push(allergenNames[arr.indexOf(a)] + (a == "false" ? "=false" : "=true"));
+    for (let a of Object.keys(arr)) {
+        allergens.push(a + "=" + arr[a]);
     }
     try {
         await connection.execute(`insert into foods set name=?, price=?, image=?;`, [req.body.name, req.body.price, req.body.image]);
         const [json] = await connection.execute("select food_id from foods order by food_id desc limit 1;");
-        await connection.execute(`insert into allergens set food_id=${json.food_id}, ${allergens.map(x => x).join(", ")};`);
+        await connection.execute(`insert into allergens set food_id=${json[0].food_id}, ${allergens.map(x => x).join(", ")};`);
         res.status(201).send({ status: "Created" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
