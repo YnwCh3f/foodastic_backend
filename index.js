@@ -151,7 +151,7 @@ const getOrders = async (req, res) => {
 
 const getConfirmedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders where restaurant_id=? and confirmed=true and finished=false`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders inner join restaurants using(restaurant_id) where restaurant_id=? and confirmed=true and finished=false`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -160,7 +160,7 @@ const getConfirmedOrders = async (req, res) => {
 
 const getUnconfirmedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders  where restaurant_id=? and confirmed=false`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders inner join restaurants using(restaurant_id) where restaurant_id=? and confirmed=false`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -169,7 +169,7 @@ const getUnconfirmedOrders = async (req, res) => {
 
 const getFinishedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders where restaurant_id=? finished=true`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders inner join restaurants using(restaurant_id) where restaurant_id=? finished=true`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -631,7 +631,7 @@ app.get("/", (req, res) => res.send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
 app.get("/food/:id", getFoodById);
 app.get("/restaurant/:id", getRestaurantById);
-app.get("/restaurantbyuserid/:id", getRestaurantById);
+app.get("/restaurantbyuserid/:id", getRestaurantByUserId);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
