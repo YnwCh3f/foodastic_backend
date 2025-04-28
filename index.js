@@ -113,7 +113,7 @@ const getCart = async (req, res) => {
 
 const getCartByCartId = async (req, res) => {
     try {
-        const [json] = await connection.execute("select * from cart where cart_id=?", [req.params.id])
+        const [json] = await connection.execute("select * from cart inner join foods using(food_id) where cart_id=?", [req.params.id])
         if (json.length > 0) res.send(json);
         else res.status(404).send({ error: "Cart not found!" })
     } catch (error) {
@@ -278,7 +278,7 @@ const newOrder = async (req, res) => {
         }
         await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?, confirmed=false`, [cart_id, req.body.restaurant_id, req.body.user_id]);
         const [json] = await connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
-        res.status(201).send({ status: "Created", order_id: json.order_id });
+        res.status(201).send({ status: "Created", order_id: json[0].order_id });
     } catch (error) {
         console.log(error)
         res.status(500).send({ error: "Internal Server Error!" });
