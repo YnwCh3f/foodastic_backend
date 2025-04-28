@@ -222,7 +222,6 @@ const newFood = async (req, res) => {
     if (!(req.body.name && req.body.price && req.body.image && req.body.allergens)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
-    let allergenNames = ["gluten", "lactose", "nuts", "mollusk", "fish", "egg", "soy"];
     let allergens = [];
     let arr = JSON.parse(req.body.allergens);
     for (let a of Object.keys(arr)) {
@@ -232,6 +231,7 @@ const newFood = async (req, res) => {
         await connection.execute(`insert into foods set name=?, price=?, image=?;`, [req.body.name, req.body.price, req.body.image]);
         const [json] = await connection.execute("select food_id from foods order by food_id desc limit 1;");
         await connection.execute(`insert into allergens set food_id=${json[0].food_id}, ${allergens.map(x => x).join(", ")};`);
+        await connection.execute(`insert into nutritions set food_id=?, kcal=?`, [json[0].food_id, req.body.kcal]);
         res.status(201).send({ status: "Created" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -617,13 +617,10 @@ app.post("/message/:sender_id/:recipient_id", newMessage);
 app.post("/order", newOrder);
 app.post("/restaurant", newRestaurant);
 app.post("/login", login);
-//app.post("/allergen", newAllergen);
 
 app.delete("/food/:id", delFood);
 app.delete("/user/:id", delUser);
 app.delete("/nutrition/:id", (req, res) => del(req, res, "nutritions", "food_id", req.params.id));
-//app.delete("/delfromcart/:user_id/:food_id", delFromCart);
-//app.delete("/clearcart/:user_id/", clearCart);
 app.delete("/restaurant/:id", (req, res) => del(req, res, "restaurants", "restaurant_id", req.params.id));
 
 
