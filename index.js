@@ -142,7 +142,7 @@ const getOrders = async (req, res) => {
 
 const getConfirmedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders where restaurant_id=? and confirmed=true`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders where restaurant_id=? and confirmed=true and finished=false`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -152,6 +152,15 @@ const getConfirmedOrders = async (req, res) => {
 const getUnconfirmedOrders = async (req, res) => {
     try {
         const [json] = await connection.execute(`select * from orders  where restaurant_id=? and confirmed=false`, [req.params.id]);
+        res.send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
+const getFinishedOrders = async (req, res) => {
+    try {
+        const [json] = await connection.execute(`select * from orders where restaurant_id=? finished=true`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -276,7 +285,7 @@ const newOrder = async (req, res) => {
         for (let i = 0; i < req.body.cart.length; i++) {
             await connection.execute(`insert into cart set cart_id=?, food_id=?, date="${date}", count=?`, [cart_id, req.body.cart[i].food_id, req.body.cart[i].size]);
         }
-        await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?, confirmed=false`, [cart_id, req.body.restaurant_id, req.body.user_id]);
+        await connection.execute(`insert into orders set cart_id=?, restaurant_id=?, user_id=?`, [cart_id, req.body.restaurant_id, req.body.user_id]);
         const [json] = await connection.execute(`select order_id from orders where cart_id=?`, [cart_id]);
         res.status(201).send({ status: "Created", order_id: json[0].order_id });
     } catch (error) {
@@ -554,6 +563,15 @@ const confirmOrder = async (req, res) => {
     }
 }
 
+const finishOrder = async (req, res) => {
+    try {
+        await connection.execute("update orders set finished=true where order_id=?", [req.params.id]);
+        res.send({ status: "Order finished" });
+    } catch(err) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 const modUserEmail = async (req, res) => {
     if (!req.body.email) {
         return res.status(400).send({ error: "Bad Request!" });
@@ -609,6 +627,7 @@ app.get("/restaurants", getRestaurants);
 app.get("/orders/:id", getOrders);
 app.get("/orders/confirmed/:id", getConfirmedOrders);
 app.get("/orders/unconfirmed/:id", getUnconfirmedOrders);
+app.get("/orders/finished/:id", getFinishedOrders);
 app.get("/orderhistory/:id", getOrderHistory);
 
 
@@ -645,6 +664,7 @@ app.patch("/user/name/:id", modUserName);
 app.patch("/user/email/:id", modUserEmail);
 app.patch("/message/:id", modMessage);
 app.patch("/order/confirm/:id", confirmOrder);
+app.patch("/order/finish/:id", finishOrder);
 
 const port = process.env.API_PORT || 89;
 
