@@ -548,6 +548,7 @@ const modUserName = async (req, res) => {
 const confirmOrder = async (req, res) => {
     try {
         await connection.execute("update orders set confirmed=true where order_id=?", [req.params.id]);
+        res.send({ status: "Order confirmed" });
     } catch(err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
@@ -643,7 +644,7 @@ app.patch("/user/image/:id", modUserImage);
 app.patch("/user/name/:id", modUserName);
 app.patch("/user/email/:id", modUserEmail);
 app.patch("/message/:id", modMessage);
-app.patch("/order/confirm", confirmOrder);
+app.patch("/order/confirm/:id", confirmOrder);
 
 const port = process.env.API_PORT || 89;
 
