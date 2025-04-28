@@ -302,6 +302,8 @@ const newRestaurant = async (req, res) => {
         await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
         const [json] = await connection.execute(`select * from restaurants order by restaurant_id desc limit 1;`);
         await connection.execute(`insert into users set first_name="-", last_name="-", email=?, password=sha2(?, 256), role='restaurant'`, ["restaurant" + json[0].restaurant_id, "restaurant"]);
+        const [j] = await connection.execute(`select * from users order by restaurant_id desc limit 1;`);
+        await connection.execute(`update restaurants set restaurant_user_id=? where restaurant_id=?`, [j[0].user_id, json[0].restaurant_id]);
         res.status(201).send({ status: "Created" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
