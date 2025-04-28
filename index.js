@@ -142,7 +142,7 @@ const getOrders = async (req, res) => {
 
 const getConfirmedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=? and confirmed=true`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders where restaurant_id=? and confirmed=true`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -151,7 +151,7 @@ const getConfirmedOrders = async (req, res) => {
 
 const getUnconfirmedOrders = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select * from orders inner join cart using(cart_id) where restaurant_id=? and confirmed=false`, [req.params.id]);
+        const [json] = await connection.execute(`select * from orders  where restaurant_id=? and confirmed=false`, [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
