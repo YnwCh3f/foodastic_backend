@@ -74,6 +74,15 @@ const getRestaurantById = async (req, res) => {
     }
 }
 
+const getRestaurantByUserId = async (req, res) => {
+    try {
+        const [json] = await connection.execute("select * from restaurants inner join users on restaurants.restaurant_user_id=users.user_id where user_id=?", [req.params.id]);
+        res.send(json);
+    } catch (error) {
+        res.status(500).send({ error: "Internal Server Error!" });
+    }
+}
+
 const getUsers = async (req, res) => {
     try {
         const [json] = await connection.query(`select user_id, first_name, last_name, email, profile_picture, points, role from users`);
@@ -302,7 +311,7 @@ const newRestaurant = async (req, res) => {
         await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
         const [json] = await connection.execute(`select * from restaurants order by restaurant_id desc limit 1;`);
         await connection.execute(`insert into users set first_name="-", last_name="-", email=?, password=sha2(?, 256), role='restaurant'`, ["restaurant" + json[0].restaurant_id, "restaurant"]);
-        const [j] = await connection.execute(`select * from users order by restaurant_id desc limit 1;`);
+        const [j] = await connection.execute(`select * from users order by user_id desc limit 1;`);
         await connection.execute(`update restaurants set restaurant_user_id=? where restaurant_id=?`, [j[0].user_id, json[0].restaurant_id]);
         res.status(201).send({ status: "Created" });
     } catch (err) {
@@ -622,6 +631,7 @@ app.get("/", (req, res) => res.send("<h1>Foodastic v1.0.0</h1>"));
 app.get("/foods", getFoods);
 app.get("/food/:id", getFoodById);
 app.get("/restaurant/:id", getRestaurantById);
+app.get("/restaurantbyuserid/:id", getRestaurantById);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
 app.get("/chat/:sender_id/:recipient_id", getChat);
