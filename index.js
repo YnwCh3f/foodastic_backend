@@ -299,7 +299,9 @@ const newRestaurant = async (req, res) => {
         return res.status(400).send({ error: "Bad Request!" });
     }
     try {
-        const [json] = await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
+        await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
+        const [json] = await connection.execute(`select * from restaurants order by restaurant_id desc limit 1;`);
+        await connection.execute(`insert into users set first_name="-", last_name="-", email=?, password=sha2(?, 256), role='restaurant'`, ["restaurant" + json[0].restaurant_id, "restaurant"]);
         res.status(201).send({ status: "Created" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -558,7 +560,7 @@ const confirmOrder = async (req, res) => {
     try {
         await connection.execute("update orders set confirmed=true where order_id=?", [req.params.id]);
         res.send({ status: "Order confirmed" });
-    } catch(err) {
+    } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
@@ -567,7 +569,7 @@ const finishOrder = async (req, res) => {
     try {
         await connection.execute("update orders set finished=true where order_id=?", [req.params.id]);
         res.send({ status: "Order finished" });
-    } catch(err) {
+    } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
