@@ -480,7 +480,7 @@ const modUserPassword = async (req, res) => {
     try {
         const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.passwordOld]);
         if (json.length == 0) return res.status(401).send({ error: "Invalid password!" });
-        if (!json.includes(req.params.id)) return res.status(401).send({ error: "Invalid password!" });
+        if (!(json.filter(v => v.user_id == req.params.id).length)) return res.status(401).send({ error: "Invalid password!" });
         await connection.execute(`update users set password=sha2(?, 256) where user_id=?`, [req.body.password, req.params.id]);
         res.send({ status: "OK" });
     } catch (error) {
@@ -498,7 +498,7 @@ const modUserName = async (req, res) => {
     try {
         const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.password]);
         if (json.length == 0) return res.status(401).send({ error: "Invalid password!" });
-        if (!json.includes(req.params.id)) return res.status(401).send({ error: "Invalid password!" });
+        if (!(json.filter(v => v.user_id == req.params.id).length)) return res.status(401).send({ error: "Invalid password!" });
         await connection.execute(`update users set first_name=?, last_name=? where user_id=?`, [req.body.first_name, req.body.last_name, req.params.id]);
         res.send({ status: "OK" });
     } catch (error) {
@@ -534,7 +534,7 @@ const modUserEmail = async (req, res) => {
     try {
         const [json] = await connection.execute(`select user_id from users where password=sha2(?, 256)`, [req.body.password]);
         if (json.length == 0) return res.status(401).send({ error: "Invalid password!" });
-        if (json[0].user_id != req.params.id) return res.status(401).send({ error: "Invalid password!" });
+        if (!(json.filter(v => v.user_id == req.params.id).length)) return res.status(401).send({ error: "Invalid password!" });
         await connection.execute(`update users set email=? where user_id=?`, [req.body.email, req.params.id]);
         //const [json] = await connection.execute(`select * from users where user_id=?`, [req.params.id]);
         res.send({ status: "OK" });
