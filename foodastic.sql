@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 30. 21:57
+-- Létrehozás ideje: 2025. Ápr 30. 23:27
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -54,7 +54,12 @@ INSERT INTO `allergens` (`food_id`, `gluten`, `lactose`, `nuts`, `fish`, `egg`, 
 (7, 0, 0, 1, 1, 0, 1, 0),
 (8, 1, 1, 0, 0, 1, 0, 1),
 (9, 0, 0, 1, 1, 0, 0, 1),
-(10, 1, 1, 1, 0, 1, 1, 0);
+(10, 1, 1, 1, 0, 1, 1, 0),
+(24, 1, 0, 0, 0, 0, 0, 0),
+(25, 1, 0, 0, 0, 0, 0, 0),
+(26, 1, 0, 0, 0, 0, 0, 0),
+(27, 1, 0, 0, 0, 0, 0, 0),
+(28, 1, 0, 0, 0, 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -113,7 +118,10 @@ INSERT INTO `foods` (`food_id`, `name`, `price`, `image`) VALUES
 (7, 'Sushi Platter', 5790, 'https://images.squarespace-cdn.com/content/v1/5021287084ae954efd31e9f4/1607482720127-ODLTGIEZG0DY4PHQ614O/F0671251-453B-44FE-8625-00E6FB2E9222?format=300w'),
 (8, 'Vegetable Stir Fry', 2890, 'https://www.maryswholelife.com/wp-content/uploads/2022/03/Pad_Pak_05-300x300.jpg'),
 (9, 'BBQ Ribs', 5290, 'https://indianakitchen.com/wp-content/uploads/2015/03/st.louis_.jpg'),
-(10, 'Chocolate Lava Cake', 2390, 'https://www.livewellbakeoften.com/wp-content/uploads/2017/01/Molten-Chocolate-Lava-Cakes-for-Two-4-300x300-1.jpg');
+(24, 'Próba', 500, '-'),
+(25, 'Próba', 500, '-'),
+(26, 'Próba', 500, '-'),
+(28, 'Próba', 500, '-');
 
 -- --------------------------------------------------------
 
@@ -141,7 +149,12 @@ INSERT INTO `nutritions` (`nutrition_id`, `food_id`, `kcal`) VALUES
 (8, 7, 820),
 (9, 8, 670),
 (10, 9, 915),
-(11, 10, 590);
+(11, 10, 590),
+(12, 24, 50),
+(13, 25, 50),
+(14, 26, 50),
+(15, 27, 50),
+(16, 28, 50);
 
 -- --------------------------------------------------------
 
@@ -206,7 +219,8 @@ INSERT INTO `users` (`user_id`, `first_name`, `last_name`, `email`, `password`, 
 (1, 'admin', 'admin', 'admin@foodastic.com', 'bff0f9cafb17ec4f5b40243d26d0432e1555a3ed1bade9de2426635218d755b0', '-', 0, 'admin'),
 (2, 'The Gourmet Spot', 'Restaurant', 'gourmetspot@foodastic.com', '2a80f12eb779ad55e7216872831b25e289ecf4aa3b66648f57b161d5f5f7e050', '-', 0, 'restaurant'),
 (3, 'Urban Bites', 'Restaurant', 'urbanbites@foodastic.com', 'a47732fd622627466afabedd57c5747b181726a5af91629564797690070b40e9', '-', 0, 'restaurant'),
-(4, 'Cozy Corner Cafe', 'Restaurant', 'cozycorner@foodastic.com', '05db1b11dd67714ab494f63f85ebf2a41a4c01a27e8764e32858a894d61f5733', '-', 0, 'restaurant');
+(4, 'Cozy Corner Cafe', 'Restaurant', 'cozycorner@foodastic.com', '05db1b11dd67714ab494f63f85ebf2a41a4c01a27e8764e32858a894d61f5733', '-', 0, 'restaurant'),
+(5, 'Próba', 'Teszt', 'user@foodastic.com', '54d5cb2d332dbdb4850293caae4559ce88b65163f1ea5d4e4b3ac49d772ded14', '-', 0, 'user');
 
 --
 -- Indexek a kiírt táblákhoz
@@ -274,13 +288,13 @@ ALTER TABLE `chats`
 -- AUTO_INCREMENT a táblához `foods`
 --
 ALTER TABLE `foods`
-  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `food_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT a táblához `nutritions`
 --
 ALTER TABLE `nutritions`
-  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `nutrition_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT a táblához `orders`
@@ -298,7 +312,7 @@ ALTER TABLE `restaurants`
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
