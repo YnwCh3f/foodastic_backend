@@ -15,12 +15,11 @@ const connection = await createConnection({
     password: process.env.DB_PASSWORD
 });
 
-const app = express();
 
+const app = express();
 app.use(express.json());
 app.use(cors());
 app.use(helmet());
-
 
 
 const getFoods = async (req, res) => {
@@ -101,14 +100,15 @@ const getNutritions = async (req, res) => {
     }
 }
 
-const getChat = async (req, res) => {
+/*const getChat = async (req, res) => {
     try {
-        const [json] = await connection.execute(`select u1.first_name, u1.last_name, u2.first_name, u2.last_name, message from chats inner join users as u1 on u1.user_id=sender_id inner join users as u2 on u2.user_id=recipient_id where sender_id=? and recipient_id=?`, [req.params.sender_id, req.params.recipient_id]);
+        const [json] = await connection.execute(`select u1.first_name, u1.last_name, u2.first_name, u2.last_name, message, u1.user_id as sender_id, u2.user_id as recipient_id, chat_date, chat_time, chat_fulldate from chats inner join users as u1 on u1.user_id=sender_id inner join users as u2 on u2.user_id=recipient_id where sender_id=? and recipient_id=?`, [req.params.sender_id, req.params.recipient_id]);
         res.send(json);
     } catch (err) {
+        console.log(err)
         res.status(500).send({ error: "Internal Server Error!" });
     }
-}
+}*/
 
 const getCart = async (req, res) => {
     try {
@@ -269,17 +269,18 @@ const newNutrition = async (req, res) => {
     }
 }
 
-const newMessage = async (req, res) => {
+/*const newMessage = async (req, res) => {
     if (!req.body.message) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     try {
-        await connection.execute(`insert into chats set sender_id=?, recipient_id=?, message=?`, [req.params.sender_id, req.params.recipient_id, req.body.message]);
-        res.status(201).send({ status: "Created" });
+        let d = new Date();
+        await connection.execute(`insert into chats set sender_id=?, recipient_id=?, message=?, chat_date=?, chat_time=?`, [req.params.sender_id, req.params.recipient_id, req.body.message, `${d.getFullYear()}.${String(d.getMonth()).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}.`, `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`]);
+        res.status(201).send({ status: "Sent" });
     } catch (err) {
         res.status(500).send({ error: "Internal Server Error!" });
     }
-}
+}*/
 
 const newOrder = async (req, res) => {
     if (!(req.body.user_id && req.body.cart && req.body.restaurant_id)) {
@@ -314,9 +315,6 @@ const newRestaurant = async (req, res) => {
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
-
-
-
 
 const del = async (req, res, table, column, value) => {
     if (!(await contains(table, column, value))) {
@@ -592,14 +590,16 @@ const login = async (req, res) => {
 }
 
 
-app.get("/", (req, res) => res.send("<h1>Foodastic v1.0.0</h1>"));
+app.get("/", (req, res) => {
+    res.send("<h1>Foodastic</h1>");
+});
 app.get("/foods", getFoods);
 app.get("/food/:id", getFoodById);
 app.get("/restaurant/:id", getRestaurantById);
 app.get("/restaurantbyuserid/:id", getRestaurantByUserId);
 app.get("/users", getUsers);
 app.get("/nutritions", getNutritions);
-app.get("/chat/:sender_id/:recipient_id", getChat);
+//app.get("/chat/:sender_id/:recipient_id", getChat);
 app.get("/cart/:id", getCart);
 app.get("/cartbycartid/:id", getCartByCartId);
 app.get("/restaurants", getRestaurants);
@@ -613,7 +613,7 @@ app.get("/orderhistory/:id", getOrderHistory);
 app.post("/food", newFood);
 app.post("/user", newUser);
 app.post("/nutrition", newNutrition);
-app.post("/message/:sender_id/:recipient_id", newMessage);
+//app.post("/message/:sender_id/:recipient_id", newMessage);
 app.post("/order", newOrder);
 app.post("/restaurant", newRestaurant);
 app.post("/login", login);
