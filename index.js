@@ -219,7 +219,7 @@ const getOrderHistory = async (req, res) => {
 
 
 const newFood = async (req, res) => {
-    if (!(req.body.name && req.body.price && req.body.image && req.body.allergens)) {
+    if (!(req.body.name && req.body.price && req.body.image && req.body.allergens && req.body.kcal)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     let allergens = [];
@@ -234,6 +234,7 @@ const newFood = async (req, res) => {
         await connection.execute(`insert into nutritions set food_id=?, kcal=?`, [json[0].food_id, req.body.kcal]);
         res.status(201).send({ status: "Created" });
     } catch (error) {
+        console.log(error)
         res.status(500).send({ error: "Internal Server Error!" });
     }
 }
@@ -354,12 +355,11 @@ const delFood = async (req, res) => {
     if (!(await contains("foods", "food_id", req.params.id))) {
         return res.status(404).send({ error: "Not found!" });
     }
-    if (await contains("cart", "food_id", req.params.id) || await contains("nutritions", "food_id", req.params.id)) {
+    if (await contains("cart", "food_id", req.params.id) || await contains("nutritions", "food_id", req.params.id) || await contains("allergens", "food_id", req.params.id)) {
         return res.status(400).send({ error: "Cannot be deleted!(item exists in another table)" });
     }
     try {
         await connection.execute(`delete from foods where food_id=?`, [req.params.id]);
-
         res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
