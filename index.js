@@ -302,13 +302,13 @@ const newOrder = async (req, res) => {
 }
 
 const newRestaurant = async (req, res) => {
-    if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name)) {
+    if (!(req.body.restaurant_picture && req.body.restaurant_address && req.body.restaurant_name && req.body.password)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         await connection.execute(`insert into restaurants set restaurant_picture=?, restaurant_address=?, restaurant_name=?`, [req.body.restaurant_picture, req.body.restaurant_address, req.body.restaurant_name]);
         const [json] = await connection.execute(`select * from restaurants order by restaurant_id desc limit 1;`);
-        await connection.execute(`insert into users set first_name="-", last_name="-", email=?, password=sha2(?, 256), role='restaurant'`, ["restaurant" + json[0].restaurant_id, "restaurant"]);
+        await connection.execute(`insert into users set first_name="-", last_name="-", email=?, password=sha2(?, 256), role='restaurant'`, ["restaurant" + json[0].restaurant_id, req.body.password]);
         const [j] = await connection.execute(`select * from users order by user_id desc limit 1;`);
         await connection.execute(`update restaurants set restaurant_user_id=? where restaurant_id=?`, [j[0].user_id, json[0].restaurant_id]);
         res.status(201).send({ status: "Created" });
@@ -360,6 +360,8 @@ const delFood = async (req, res) => {
     }
     try {
         await connection.execute(`delete from foods where food_id=?`, [req.params.id]);
+        await connection.execute(`delete from nutritions where food_id=?`, [req.params.id]);
+        await connection.execute(`delete from allergens where food_id=?`, [req.params.id]);
         res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
@@ -369,11 +371,12 @@ const delFood = async (req, res) => {
 
 
 const modFood = async (req, res) => {
-    if (!(req.body.name && req.body.price && req.body.image)) {
+    if (!(req.body.name && req.body.price && req.body.image && req.body.kcal)) {
         return res.status(400).send({ error: "Bad Request!" });
     }
     try {
         await connection.execute(`update foods set name=?, price=?, image=? where food_id=?`, [req.body.name, req.body.price, req.body.image, req.params.id]);
+        await connection.execute(`update nutritions set kcal=? where food_id=?`, [req.body.kcal, req.params.id]);
         res.send({ status: "OK" });
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
