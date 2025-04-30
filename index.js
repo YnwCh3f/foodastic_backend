@@ -57,7 +57,7 @@ const getFoods = async (req, res) => {
 
 const getFoodById = async (req, res) => {
     try {
-        const [json] = await connection.execute("select * from foods where food_id=?", [req.params.id]);
+        const [json] = await connection.execute("select * from foods inner join nutritions using(food_id) where food_id=?", [req.params.id]);
         res.send(json);
     } catch (error) {
         res.status(500).send({ error: "Internal Server Error!" });
